@@ -1,6 +1,7 @@
 export class FarmScene extends Phaser.Scene {
   constructor() {
     super('FarmScene');
+    this.storeOpen = false; // track apakah store sedang terbuka
   }
 
   preload() {
@@ -16,34 +17,30 @@ export class FarmScene extends Phaser.Scene {
     const frameColor = 0x8B4513;
 
     // --- Atur tinggi frame ---
-    const topFrameHeight = 48;      // lebih kecil dari sebelumnya
-    const bottomFrameHeight = 80;   // lebih lebar
-    const leftRightThickness = sideThickness;
+    const topFrameHeight = 48;
+    const bottomFrameHeight = 80;
 
     // --- Hitung jumlah tile horizontal & vertikal untuk grass ---
-    const mapWidth = Math.ceil((width - leftRightThickness*2) / tileSize);
+    const mapWidth = Math.ceil((width - sideThickness*2) / tileSize);
     const mapHeight = Math.ceil((height - topFrameHeight - bottomFrameHeight) / tileSize);
 
     // --- Full Grass Grid di tengah ---
     for (let y = 0; y < mapHeight; y++) {
       for (let x = 0; x < mapWidth; x++) {
-        const posX = leftRightThickness + x*tileSize;
+        const posX = sideThickness + x*tileSize;
         const posY = topFrameHeight + y*tileSize;
         this.add.image(posX, posY, 'grass').setOrigin(0);
       }
     }
 
     // --- Frame pinggir ---
-    // Kiri & kanan tipis
-    this.add.rectangle(0, 0, leftRightThickness, height, frameColor).setOrigin(0); // kiri
-    this.add.rectangle(width - leftRightThickness, 0, leftRightThickness, height, frameColor).setOrigin(0); // kanan
-
-    // Atas & bawah
-    this.add.rectangle(leftRightThickness, 0, width - leftRightThickness*2, topFrameHeight, frameColor).setOrigin(0); // atas
-    this.add.rectangle(leftRightThickness, height - bottomFrameHeight, width - leftRightThickness*2, bottomFrameHeight, frameColor).setOrigin(0); // bawah
+    this.add.rectangle(0, 0, sideThickness, height, frameColor).setOrigin(0); // kiri
+    this.add.rectangle(width - sideThickness, 0, sideThickness, height, frameColor).setOrigin(0); // kanan
+    this.add.rectangle(sideThickness, 0, width - sideThickness*2, topFrameHeight, frameColor).setOrigin(0); // atas
+    this.add.rectangle(sideThickness, height - bottomFrameHeight, width - sideThickness*2, bottomFrameHeight, frameColor).setOrigin(0); // bawah
 
     // --- Jam realtime di kiri atas ---
-    const timeText = this.add.text(leftRightThickness + 10, topFrameHeight/2, '', {
+    const timeText = this.add.text(sideThickness + 10, topFrameHeight/2, '', {
       fontFamily: 'Arial',
       fontSize: '16px',
       color: '#fff',
@@ -66,23 +63,25 @@ export class FarmScene extends Phaser.Scene {
       }
     });
 
-    // --- Tombol STORE pakai gambar di frame bawah tengah ---
-    const storeWidth = 80;
-    const storeHeight = 40;
-
+    // --- Tombol STORE pakai gambar persegi di frame bawah tengah ---
+    const storeSize = 50; // ukuran persegi
     const storeBtn = this.add.image(width / 2, height - bottomFrameHeight / 2, 'storeBtn')
-      .setDisplaySize(storeWidth, storeHeight)
+      .setDisplaySize(storeSize, storeSize)
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
 
     storeBtn.on('pointerdown', () => {
-      this.openStoreMenu();
+      if (!this.storeOpen) {
+        this.openStoreMenu();
+      }
     });
   }
 
   // --- Fungsi buka menu store ---
   openStoreMenu() {
     const { width, height } = this.scale;
+    this.storeOpen = true; // tandai store terbuka
+
     // Semi-transparent background
     const bg = this.add.rectangle(width/2, height/2, width*0.8, height*0.6, 0x654321, 0.85).setOrigin(0.5);
 
@@ -109,6 +108,7 @@ export class FarmScene extends Phaser.Scene {
     // Close handler
     closeBtn.on('pointerdown', () => {
       [bg, title, closeBtn, item1, item2].forEach(e => e.destroy());
+      this.storeOpen = false; // reset flag
     });
   }
 }
