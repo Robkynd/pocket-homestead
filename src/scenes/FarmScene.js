@@ -5,7 +5,7 @@ export class FarmScene extends Phaser.Scene {
 
   preload() {
     // Load grass tile
-    this.load.image('grass', 'assets/ui/grass.png');
+    this.load.image('grass', 'assets/ui/jidan.png');
   }
 
   create() {
