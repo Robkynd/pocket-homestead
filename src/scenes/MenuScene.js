@@ -1,33 +1,33 @@
-export default class MenuScene extends Phaser.Scene {
+export class MenuScene extends Phaser.Scene {
   constructor() {
     super('MenuScene');
   }
 
   create() {
-    console.log('MenuScene loaded');
+    const { width, height } = this.scale;
 
-    // background biru muda
-    this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x87ceeb).setOrigin(0);
+    // BACKGROUND IMAGE
+    this.add.image(width / 2, height / 2, 'title')
+      .setDisplaySize(width, height);
 
-    // title game
-    this.add.text(this.scale.width / 2, 120, 'POCKET HOMESTEAD', {
-      fontSize: '24px',
-      color: '#000',
-      fontStyle: 'bold'
-    }).setOrigin(0.5);
+    // BUTTON LOGIN
+    const btn = this.add.text(
+      width / 2,
+      height - 90,
+      'LOG IN',
+      {
+        fontSize: '22px',
+        color: '#fff',
+        backgroundColor: '#6b4f2c',
+        padding: { x: 18, y: 10 }
+      }
+    )
+    .setOrigin(0.5)
+    .setInteractive();
 
-    // tombol start
-    const startText = this.add.text(this.scale.width / 2, 220, 'TAP TO START', {
-      fontSize: '18px',
-      color: '#000'
-    }).setOrigin(0.5);
-
-    // buat bisa di tap
-    startText.setInteractive({ useHandCursor: true });
-
-    startText.on('pointerdown', () => {
-      console.log('TAP TO START clicked');
-      this.scene.start('FarmScene');
+    btn.on('pointerdown', () => {
+      alert('GAME SEDANG TAHAP BUILD');
+      // this.scene.start('FarmScene');
     });
   }
 }
