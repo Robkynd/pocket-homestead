@@ -1,12 +1,12 @@
 export class FarmScene extends Phaser.Scene {
   constructor() {
     super('FarmScene');
-    this.storeOpen = false; // track apakah store sedang terbuka
+    this.storeOpen = false;
   }
 
   preload() {
-    this.load.image('grass', 'assets/ui/grass.png');       // tile grass
-    this.load.image('storeBtn', 'assets/ui/store.png');   // button store image
+    this.load.image('grass', 'assets/ui/grass.png');
+    this.load.image('storeBtn', 'assets/ui/store.png');
   }
 
   create() {
@@ -16,15 +16,15 @@ export class FarmScene extends Phaser.Scene {
     const sideThickness = 8;
     const frameColor = 0x8B4513;
 
-    // --- Atur tinggi frame ---
-    const topFrameHeight = 48;
-    const bottomFrameHeight = 80;
+    // --- Tinggi frame ---
+    const topFrameHeight = 40;
+    const bottomFrameHeight = 100;
 
-    // --- Hitung jumlah tile horizontal & vertikal untuk grass ---
+    // --- Hitung map grass ---
     const mapWidth = Math.ceil((width - sideThickness*2) / tileSize);
     const mapHeight = Math.ceil((height - topFrameHeight - bottomFrameHeight) / tileSize);
 
-    // --- Full Grass Grid di tengah ---
+    // --- Grass grid ---
     for (let y = 0; y < mapHeight; y++) {
       for (let x = 0; x < mapWidth; x++) {
         const posX = sideThickness + x*tileSize;
@@ -39,15 +39,14 @@ export class FarmScene extends Phaser.Scene {
     this.add.rectangle(sideThickness, 0, width - sideThickness*2, topFrameHeight, frameColor).setOrigin(0); // atas
     this.add.rectangle(sideThickness, height - bottomFrameHeight, width - sideThickness*2, bottomFrameHeight, frameColor).setOrigin(0); // bawah
 
-    // --- Jam realtime di kiri atas ---
-    const timeText = this.add.text(sideThickness + 10, topFrameHeight/2, '', {
+    // --- Jam realtime kiri atas ---
+    const timeText = this.add.text(sideThickness + 8, topFrameHeight/2, '', {
       fontFamily: 'Arial',
-      fontSize: '16px',
+      fontSize: '14px',
       color: '#fff',
       stroke: '#6b4f2c',
-      strokeThickness: 2,
-      shadow: { x: 1, y: 1, color: '#000', blur: 2 }
-    }).setOrigin(0, 0.5);
+      strokeThickness: 2
+    }).setOrigin(0,0.5);
 
     this.time.addEvent({
       delay: 1000,
@@ -58,57 +57,92 @@ export class FarmScene extends Phaser.Scene {
         const minutes = now.getMinutes().toString().padStart(2,'0');
         const seconds = now.getSeconds().toString().padStart(2,'0');
         const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-        const dayName = days[now.getDay()];
-        timeText.setText(`${dayName} - ${hours}:${minutes}:${seconds}`);
+        timeText.setText(`${days[now.getDay()]} - ${hours}:${minutes}:${seconds}`);
       }
     });
 
-    // --- Tombol STORE pakai gambar persegi di frame bawah tengah ---
-    const storeSize = 50; // ukuran persegi
-    const storeBtn = this.add.image(width / 2, height - bottomFrameHeight / 2, 'storeBtn')
+    // --- Tombol store di frame bawah tengah ---
+    const storeSize = 50;
+    const storeBtn = this.add.image(width/2, height - bottomFrameHeight/2, 'storeBtn')
       .setDisplaySize(storeSize, storeSize)
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
 
     storeBtn.on('pointerdown', () => {
-      if (!this.storeOpen) {
-        this.openStoreMenu();
-      }
+      if (!this.storeOpen) this.openStoreMenu();
     });
   }
 
-  // --- Fungsi buka menu store ---
   openStoreMenu() {
     const { width, height } = this.scale;
-    this.storeOpen = true; // tandai store terbuka
+    this.storeOpen = true;
 
-    // Semi-transparent background
-    const bg = this.add.rectangle(width/2, height/2, width*0.8, height*0.6, 0x654321, 0.85).setOrigin(0.5);
+    // --- Semi-transparent background store ---
+    const bgWidth = width * 0.85;
+    const bgHeight = height * 0.6;
+    const bg = this.add.rectangle(width/2, height/2, bgWidth, bgHeight, 0x654321, 0.95).setOrigin(0.5);
 
-    // Title STORE
-    const title = this.add.text(width/2, height/2 - 120, 'STORE', {
-      fontSize: '22px',
-      color: '#fff',
-      fontFamily: 'Arial'
-    }).setOrigin(0.5);
+    // --- Title ---
+    const title = this.add.text(width/2, height/2 - bgHeight/2 + 20, 'STORE', {
+      fontSize: '20px',
+      fontFamily: 'Arial',
+      color: '#fff'
+    }).setOrigin(0.5, 0);
 
-    // Close button
-    const closeBtn = this.add.text(width/2 + 150, height/2 - 120, 'X', {
+    // --- Close button ---
+    const closeBtn = this.add.text(width/2 + bgWidth/2 - 20, height/2 - bgHeight/2 + 20, 'X', {
       fontSize: '18px',
       color: '#fff',
       backgroundColor: '#8B0000',
       padding: { x: 5, y: 2 }
-    }).setOrigin(0.5)
-      .setInteractive();
+    }).setOrigin(0.5,0).setInteractive();
 
-    // Contoh item
-    const item1 = this.add.text(width/2 - 80, height/2 - 60, 'Seed - $10', { fontSize: '16px', color: '#fff' }).setOrigin(0.5);
-    const item2 = this.add.text(width/2 + 80, height/2 - 60, 'Watering Can - $25', { fontSize: '16px', color: '#fff' }).setOrigin(0.5);
-
-    // Close handler
     closeBtn.on('pointerdown', () => {
-      [bg, title, closeBtn, item1, item2].forEach(e => e.destroy());
-      this.storeOpen = false; // reset flag
+      [bg, title, closeBtn, ...itemTexts].forEach(e => e.destroy());
+      this.storeOpen = false;
+    });
+
+    // --- Daftar item ---
+    const itemTexts = [];
+    const padding = 30;
+    let startY = height/2 - 60;
+
+    const seeds = [
+      { name: 'Carrot', price: 10 },
+      { name: 'Corn', price: 12 },
+      { name: 'Chili', price: 8 },
+      { name: 'Cabbage', price: 15 }
+    ];
+
+    const fruits = [
+      { name: 'Strawberry', price: 20 },
+      { name: 'Pineapple', price: 25 },
+      { name: 'Watermelon', price: 30 },
+      { name: 'Orange', price: 22 }
+    ];
+
+    // --- Bibit ---
+    const seedTitle = this.add.text(width/2 - bgWidth/4, startY - padding, 'Seeds', { fontSize: '16px', color: '#fff' }).setOrigin(0.5,0);
+    itemTexts.push(seedTitle);
+    seeds.forEach((item, idx) => {
+      const t = this.add.text(width/2 - bgWidth/4, startY + idx*22, `${item.name} - $${item.price}`, { fontSize: '14px', color: '#fff' }).setOrigin(0.5,0);
+      t.setInteractive({ useHandCursor: true });
+      t.on('pointerdown', () => {
+        console.log(`Buy ${item.name} for $${item.price} (2% fee to dev)`);
+      });
+      itemTexts.push(t);
+    });
+
+    // --- Fruits ---
+    const fruitTitle = this.add.text(width/2 + bgWidth/4, startY - padding, 'Fruits', { fontSize: '16px', color: '#fff' }).setOrigin(0.5,0);
+    itemTexts.push(fruitTitle);
+    fruits.forEach((item, idx) => {
+      const t = this.add.text(width/2 + bgWidth/4, startY + idx*22, `${item.name} - $${item.price}`, { fontSize: '14px', color: '#fff' }).setOrigin(0.5,0);
+      t.setInteractive({ useHandCursor: true });
+      t.on('pointerdown', () => {
+        console.log(`Buy ${item.name} for $${item.price} (2% fee to dev)`);
+      });
+      itemTexts.push(t);
     });
   }
 }
