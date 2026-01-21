@@ -1,18 +1,12 @@
-window.onload = () => {
-  const config = {
-    type: Phaser.AUTO,
-    width: 360,
-    height: 640,
-    backgroundColor: '#87CEEB',
-    scene: {
-      create() {
-        this.add.text(50, 50, 'Pocket Homestead OK', {
-          fontSize: '20px',
-          color: '#000'
-        });
-      }
-    }
-  };
+import { BootScene } from './src/scenes/BootScene.js';
+import { MenuScene } from './src/scenes/MenuScene.js';
 
-  new Phaser.Game(config);
+const config = {
+  type: Phaser.AUTO,
+  width: 360,
+  height: 640,
+  backgroundColor: '#87CEEB',
+  scene: [BootScene, MenuScene]
 };
+
+new Phaser.Game(config);
