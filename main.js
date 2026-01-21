@@ -14,7 +14,7 @@ const config = {
   },
 
   backgroundColor: '#000',
-  scene: [BootScene, MenuScene, Farmscene]
+  scene: [BootScene, MenuScene, FarmScene]
 };
 
 new Phaser.Game(config);
