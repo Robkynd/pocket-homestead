@@ -2,11 +2,15 @@ export class FarmScene extends Phaser.Scene {
   constructor() {
     super('FarmScene');
     this.storeOpen = false;
+    this.storageOpen = false;
+    this.playerStorage = [];
   }
 
   preload() {
+    // Assets
     this.load.image('grass', 'assets/ui/grass.png');
     this.load.image('storeBtn', 'assets/ui/store.png');
+    this.load.image('storageBtn', 'assets/ui/storage.png');
   }
 
   create() {
@@ -16,8 +20,7 @@ export class FarmScene extends Phaser.Scene {
     const sideThickness = 8;
     const frameColor = 0x8B4513;
 
-    // --- Tinggi frame ---
-    const topFrameHeight = 40;
+    const topFrameHeight = 35;
     const bottomFrameHeight = 100;
 
     // --- Hitung map grass ---
@@ -61,9 +64,17 @@ export class FarmScene extends Phaser.Scene {
       }
     });
 
-    // --- Tombol store di frame bawah tengah ---
+    // --- Player baru dapat bibit random 10 biji ---
+    const allSeeds = ['Carrot','Corn','Chili','Cabbage'];
+    for(let i=0;i<10;i++){
+      const randomSeed = allSeeds[Math.floor(Math.random()*allSeeds.length)];
+      this.playerStorage.push(randomSeed);
+    }
+    console.log('Player initial storage:', this.playerStorage);
+
+    // --- Tombol Store di bawah tengah ---
     const storeSize = 50;
-    const storeBtn = this.add.image(width/2, height - bottomFrameHeight/2, 'storeBtn')
+    const storeBtn = this.add.image(width/2 + 40, height - bottomFrameHeight/2, 'storeBtn')
       .setDisplaySize(storeSize, storeSize)
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
@@ -71,41 +82,40 @@ export class FarmScene extends Phaser.Scene {
     storeBtn.on('pointerdown', () => {
       if (!this.storeOpen) this.openStoreMenu();
     });
+
+    // --- Tombol Storage di bawah kiri store ---
+    const storageBtn = this.add.image(width/2 - 40, height - bottomFrameHeight/2, 'storageBtn')
+      .setDisplaySize(storeSize, storeSize)
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
+
+    storageBtn.on('pointerdown', () => {
+      if (!this.storageOpen) this.openStorageMenu();
+    });
   }
 
   openStoreMenu() {
-    const { width, height } = this.scale;
+    if(this.storeOpen) return;
     this.storeOpen = true;
 
-    // --- Semi-transparent background store ---
+    const { width, height } = this.scale;
     const bgWidth = width * 0.85;
     const bgHeight = height * 0.6;
+
     const bg = this.add.rectangle(width/2, height/2, bgWidth, bgHeight, 0x654321, 0.95).setOrigin(0.5);
 
-    // --- Title ---
     const title = this.add.text(width/2, height/2 - bgHeight/2 + 20, 'STORE', {
       fontSize: '20px',
       fontFamily: 'Arial',
       color: '#fff'
     }).setOrigin(0.5, 0);
 
-    // --- Close button ---
     const closeBtn = this.add.text(width/2 + bgWidth/2 - 20, height/2 - bgHeight/2 + 20, 'X', {
       fontSize: '18px',
       color: '#fff',
       backgroundColor: '#8B0000',
       padding: { x: 5, y: 2 }
     }).setOrigin(0.5,0).setInteractive();
-
-    closeBtn.on('pointerdown', () => {
-      [bg, title, closeBtn, ...itemTexts].forEach(e => e.destroy());
-      this.storeOpen = false;
-    });
-
-    // --- Daftar item ---
-    const itemTexts = [];
-    const padding = 30;
-    let startY = height/2 - 60;
 
     const seeds = [
       { name: 'Carrot', price: 10 },
@@ -121,28 +131,70 @@ export class FarmScene extends Phaser.Scene {
       { name: 'Orange', price: 22 }
     ];
 
-    // --- Bibit ---
+    const itemTexts = [];
+    const padding = 30;
+    let startY = height/2 - 60;
+
     const seedTitle = this.add.text(width/2 - bgWidth/4, startY - padding, 'Seeds', { fontSize: '16px', color: '#fff' }).setOrigin(0.5,0);
     itemTexts.push(seedTitle);
+
     seeds.forEach((item, idx) => {
       const t = this.add.text(width/2 - bgWidth/4, startY + idx*22, `${item.name} - $${item.price}`, { fontSize: '14px', color: '#fff' }).setOrigin(0.5,0);
       t.setInteractive({ useHandCursor: true });
-      t.on('pointerdown', () => {
-        console.log(`Buy ${item.name} for $${item.price} (2% fee to dev)`);
-      });
+      t.on('pointerdown', () => console.log(`Buy ${item.name} for $${item.price} (2% fee to dev)`));
       itemTexts.push(t);
     });
 
-    // --- Fruits ---
     const fruitTitle = this.add.text(width/2 + bgWidth/4, startY - padding, 'Fruits', { fontSize: '16px', color: '#fff' }).setOrigin(0.5,0);
     itemTexts.push(fruitTitle);
+
     fruits.forEach((item, idx) => {
       const t = this.add.text(width/2 + bgWidth/4, startY + idx*22, `${item.name} - $${item.price}`, { fontSize: '14px', color: '#fff' }).setOrigin(0.5,0);
       t.setInteractive({ useHandCursor: true });
-      t.on('pointerdown', () => {
-        console.log(`Buy ${item.name} for $${item.price} (2% fee to dev)`);
-      });
+      t.on('pointerdown', () => console.log(`Buy ${item.name} for $${item.price} (2% fee to dev)`));
       itemTexts.push(t);
+    });
+
+    closeBtn.on('pointerdown', () => {
+      [bg, title, closeBtn, ...itemTexts].forEach(e => e.destroy());
+      this.storeOpen = false;
+    });
+  }
+
+  openStorageMenu() {
+    if(this.storageOpen) return;
+    this.storageOpen = true;
+
+    const { width, height } = this.scale;
+    const bgWidth = width * 0.85;
+    const bgHeight = height * 0.6;
+
+    const bg = this.add.rectangle(width/2, height/2, bgWidth, bgHeight, 0x444444, 0.95).setOrigin(0.5);
+
+    const title = this.add.text(width/2, height/2 - bgHeight/2 + 20, 'STORAGE', {
+      fontSize: '20px',
+      fontFamily: 'Arial',
+      color: '#fff'
+    }).setOrigin(0.5, 0);
+
+    const closeBtn = this.add.text(width/2 + bgWidth/2 - 20, height/2 - bgHeight/2 + 20, 'X', {
+      fontSize: '18px',
+      color: '#fff',
+      backgroundColor: '#8B0000',
+      padding: { x: 5, y: 2 }
+    }).setOrigin(0.5,0).setInteractive();
+
+    const itemTexts = [];
+    let startY = height/2 - bgHeight/2 + 60;
+
+    this.playerStorage.forEach((item, idx) => {
+      const t = this.add.text(width/2, startY + idx*22, `${item}`, { fontSize: '14px', color: '#fff' }).setOrigin(0.5,0);
+      itemTexts.push(t);
+    });
+
+    closeBtn.on('pointerdown', () => {
+      [bg, title, closeBtn, ...itemTexts].forEach(e => e.destroy());
+      this.storageOpen = false;
     });
   }
 }
