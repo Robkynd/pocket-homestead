@@ -1,6 +1,5 @@
 import BootScene from './src/scenes/BootScene.js';
 import MenuScene from './src/scenes/MenuScene.js';
-import FarmScene from './src/scenes/FarmScene.js';
 
 const config = {
   type: Phaser.AUTO,
@@ -11,7 +10,7 @@ const config = {
     autoCenter: Phaser.Scale.CENTER_BOTH
   },
   backgroundColor: '#000',
-  scene: [BootScene, MenuScene, FarmScene]
+  scene: [BootScene, MenuScene]
 };
 
 new Phaser.Game(config);
