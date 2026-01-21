@@ -27,7 +27,7 @@ export class MenuScene extends Phaser.Scene {
 
     btn.on('pointerdown', () => {
       alert('GAME SEDANG TAHAP BUILD');
-      this.scene.start('FarmScene');
+      //this.scene.start('FarmScene');
     });
   }
 }
