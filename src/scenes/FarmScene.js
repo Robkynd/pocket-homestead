@@ -3,7 +3,6 @@ export class FarmScene extends Phaser.Scene {
     super('FarmScene');
     this.storeOpen = false;
     this.storageOpen = false;
-    this.playerStorage = {};
   }
 
   preload() {
@@ -13,25 +12,33 @@ export class FarmScene extends Phaser.Scene {
   }
 
   create() {
-    const tileSize = 64;
     const width = this.scale.width;
     const height = this.scale.height;
-    const sideThickness = 8;
-    const frameColor = 0x8B4513;
 
+    const sideThickness = 8;
     const topFrameHeight = 30;
     const bottomFrameHeight = 100;
+    const frameColor = 0x8B4513;
 
-    // --- Hitung map grass ---
-    const mapWidth = Math.ceil((width - sideThickness*2) / tileSize);
-    const mapHeight = Math.ceil((height - topFrameHeight - bottomFrameHeight) / tileSize);
+    // --- Hitung area grass ---
+    const areaWidth = width - sideThickness * 2;
+    const areaHeight = height - topFrameHeight - bottomFrameHeight;
 
-    // --- Grass grid ---
+    // --- Tentuin ukuran tile persegi maksimal ---
+    const tileSize = Math.floor(Math.min(areaWidth / 12, areaHeight / 24));
+
+    // --- Hitung jumlah tile horizontal & vertikal ---
+    const mapWidth = Math.floor(areaWidth / tileSize);
+    const mapHeight = Math.floor(areaHeight / tileSize);
+
+    console.log('tileSize:', tileSize, 'mapWidth:', mapWidth, 'mapHeight:', mapHeight);
+
+    // --- Full Grass Grid ---
     for (let y = 0; y < mapHeight; y++) {
       for (let x = 0; x < mapWidth; x++) {
-        const posX = sideThickness + x*tileSize;
-        const posY = topFrameHeight + y*tileSize;
-        this.add.image(posX, posY, 'grass').setOrigin(0);
+        const posX = sideThickness + x * tileSize;
+        const posY = topFrameHeight + y * tileSize;
+        this.add.image(posX, posY, 'grass').setOrigin(0).setDisplaySize(tileSize, tileSize);
       }
     }
 
@@ -63,21 +70,9 @@ export class FarmScene extends Phaser.Scene {
       }
     });
 
-    // --- Player baru dapat bibit dan buah random ---
-    const allSeeds = ['Carrot','Corn','Chili','Cabbage'];
-    const allFruits = ['Strawberry','Pineapple','Watermelon','Orange'];
-    const allItems = [...allSeeds, ...allFruits];
-
-    allItems.forEach(item => {
-      this.playerStorage[item] = Math.floor(Math.random() * 5) + 1; // jumlah random 1-5
-    });
-
-    console.log('Player initial storage:', this.playerStorage);
-
     // --- Tombol Store di bawah kanan ---
-    const storeSize = 50;
     const storeBtn = this.add.image(width/2 + 40, height - bottomFrameHeight/2, 'storeBtn')
-      .setDisplaySize(storeSize, storeSize)
+      .setDisplaySize(50, 50)
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
 
@@ -87,7 +82,7 @@ export class FarmScene extends Phaser.Scene {
 
     // --- Tombol Storage di bawah kiri ---
     const storageBtn = this.add.image(width/2 - 40, height - bottomFrameHeight/2, 'storageBtn')
-      .setDisplaySize(storeSize, storeSize)
+      .setDisplaySize(50, 50)
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
 
@@ -146,18 +141,24 @@ export class FarmScene extends Phaser.Scene {
       padding: { x: 5, y: 2 }
     }).setOrigin(0.5,0).setInteractive();
 
-    // --- Table header ---
+    // --- Dummy player storage table ---
+    this.playerStorage = {
+      'Carrot': 2,
+      'Corn': 3,
+      'Chili': 1,
+      'Cabbage': 4,
+      'Strawberry': 2,
+      'Pineapple': 1,
+      'Watermelon': 1,
+      'Orange': 3
+    };
+
     const startY = height/2 - bgHeight/2 + 60;
-    const colX1 = width/2 - 50; // Seed/Fruit Name
+    const colX1 = width/2 - 50; // Name
     const colX2 = width/2 + 50; // Quantity
+    const itemTexts = [];
 
-    const headerName = this.add.text(colX1, startY, 'Seed/Fruit', { fontSize: '14px', color: '#fff' }).setOrigin(0.5,0);
-    const headerQty  = this.add.text(colX2, startY, 'Quantity', { fontSize: '14px', color: '#fff' }).setOrigin(0.5,0);
-
-    const itemTexts = [headerName, headerQty];
-
-    let rowY = startY + 20;
-
+    let rowY = startY;
     Object.keys(this.playerStorage).forEach((item) => {
       const nameText = this.add.text(colX1, rowY, item, { fontSize: '14px', color: '#fff' }).setOrigin(0.5,0);
       const qtyText  = this.add.text(colX2, rowY, this.playerStorage[item], { fontSize: '14px', color: '#fff' }).setOrigin(0.5,0);
