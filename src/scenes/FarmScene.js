@@ -4,15 +4,15 @@ export class FarmScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('grass', 'assets/ui/grass.png'); // pastikan path benar
+    this.load.image('grass', 'assets/ui/grass.png'); // path tile grass
+    // nanti bisa load icon store item di sini
   }
 
   create() {
-    const tileSize = 64;           // tinggi frame atas/bawah
+    const tileSize = 64;
     const width = this.scale.width;
     const height = this.scale.height;
-
-    const sideThickness = 8;       // frame tipis kiri & kanan
+    const sideThickness = 8;
     const frameColor = 0x8B4513;
 
     // --- Hitung jumlah tile horizontal & vertikal untuk grass ---
@@ -20,8 +20,8 @@ export class FarmScene extends Phaser.Scene {
     const mapHeight = Math.ceil((height - tileSize*2) / tileSize);
 
     // --- Full Grass Grid di tengah ---
-    for (let y = 1; y <= mapHeight; y++) {         // mulai 1 untuk sisain frame atas
-      for (let x = 1; x <= mapWidth; x++) {       // mulai 1 untuk sisain frame kiri
+    for (let y = 1; y <= mapHeight; y++) {
+      for (let x = 1; x <= mapWidth; x++) {
         const posX = sideThickness + (x-1)*tileSize;
         const posY = tileSize + (y-1)*tileSize;
         this.add.image(posX, posY, 'grass').setOrigin(0);
@@ -29,10 +29,8 @@ export class FarmScene extends Phaser.Scene {
     }
 
     // --- Frame pinggir ---
-    // Kiri & kanan tipis
     this.add.rectangle(0, 0, sideThickness, height, frameColor).setOrigin(0); // kiri
     this.add.rectangle(width - sideThickness, 0, sideThickness, height, frameColor).setOrigin(0); // kanan
-    // Atas & bawah tebal 1 tile
     this.add.rectangle(sideThickness, 0, width - sideThickness*2, tileSize, frameColor).setOrigin(0); // atas
     this.add.rectangle(sideThickness, height - tileSize, width - sideThickness*2, tileSize, frameColor).setOrigin(0); // bawah
 
@@ -58,6 +56,51 @@ export class FarmScene extends Phaser.Scene {
         const dayName = days[now.getDay()];
         timeText.setText(`${dayName} - ${hours}:${minutes}:${seconds}`);
       }
+    });
+
+    // --- Tombol STORE di frame bawah tengah ---
+    const storeBtn = this.add.text(width / 2, height - tileSize / 2, 'STORE', {
+      fontSize: '18px',
+      color: '#fff',
+      backgroundColor: '#6b4f2c',
+      padding: { x: 15, y: 8 }
+    }).setOrigin(0.5)
+      .setInteractive();
+
+    storeBtn.on('pointerdown', () => {
+      this.openStoreMenu();
+    });
+  }
+
+  // --- Fungsi buka menu store ---
+  openStoreMenu() {
+    const { width, height } = this.scale;
+    // Semi-transparent background
+    const bg = this.add.rectangle(width/2, height/2, width*0.8, height*0.6, 0x654321, 0.85).setOrigin(0.5);
+
+    // Title STORE
+    const title = this.add.text(width/2, height/2 - 120, 'STORE', {
+      fontSize: '22px',
+      color: '#fff',
+      fontFamily: 'Arial'
+    }).setOrigin(0.5);
+
+    // Close button
+    const closeBtn = this.add.text(width/2 + 150, height/2 - 120, 'X', {
+      fontSize: '18px',
+      color: '#fff',
+      backgroundColor: '#8B0000',
+      padding: { x: 5, y: 2 }
+    }).setOrigin(0.5)
+      .setInteractive();
+
+    // Contoh item
+    const item1 = this.add.text(width/2 - 80, height/2 - 60, 'Seed - $10', { fontSize: '16px', color: '#fff' }).setOrigin(0.5);
+    const item2 = this.add.text(width/2 + 80, height/2 - 60, 'Watering Can - $25', { fontSize: '16px', color: '#fff' }).setOrigin(0.5);
+
+    // Close handler
+    closeBtn.on('pointerdown', () => {
+      [bg, title, closeBtn, item1, item2].forEach(e => e.destroy());
     });
   }
 }
