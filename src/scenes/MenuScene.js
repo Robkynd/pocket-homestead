@@ -26,7 +26,7 @@ export class MenuScene extends Phaser.Scene {
     .setInteractive();
 
     btn.on('pointerdown', () => {
-      alert('KENAL KOJIM GA?');
+     // alert('KENAL KOJIM GA?');
       this.scene.start('FarmScene');
     });
   }
