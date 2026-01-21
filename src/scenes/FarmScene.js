@@ -4,7 +4,8 @@ export class FarmScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('grass', 'assets/ui/grass.png'); // path tile grass
+    this.load.image('grass', 'assets/ui/grass.png');       // tile grass
+    this.load.image('storeBtn', 'assets/ui/store.png');   // button store image
     // nanti bisa load icon store item di sini
   }
 
@@ -58,14 +59,14 @@ export class FarmScene extends Phaser.Scene {
       }
     });
 
-    // --- Tombol STORE di frame bawah tengah ---
-    const storeBtn = this.add.text(width / 2, height - tileSize / 2, 'STORE', {
-      fontSize: '18px',
-      color: '#fff',
-      backgroundColor: '#6b4f2c',
-      padding: { x: 15, y: 8 }
-    }).setOrigin(0.5)
-      .setInteractive();
+    // --- Tombol STORE pakai gambar ---
+    const storeWidth = 80;  // ukuran gambar button
+    const storeHeight = 40;
+
+    const storeBtn = this.add.image(width / 2, height - tileSize / 2, 'storeBtn')
+      .setDisplaySize(storeWidth, storeHeight)
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });  // cursor pointer
 
     storeBtn.on('pointerdown', () => {
       this.openStoreMenu();
