@@ -4,50 +4,47 @@ export class FarmScene extends Phaser.Scene {
   }
 
   preload() {
-    // --- Load grass tile ---
-    this.load.image('grass', 'assets/ui/grass.png'); // pastikan path & nama file benar
+    // Load grass tile
+    this.load.image('grass', 'assets/ui/grass.png'); // pastikan path benar
   }
 
   create() {
-    const tileSize = 64;           // ukuran tile
+    const tileSize = 64;
     const width = this.scale.width;
     const height = this.scale.height;
 
-    const uiHeight = 64;           // tinggi UI bar untuk jam/hari
-
-    // --- Full Grass Grid (di bawah UI bar) ---
+    // --- Hitung jumlah tile horizontal & vertikal ---
     const mapWidth = Math.ceil(width / tileSize);
-    const mapHeight = Math.ceil((height - uiHeight) / tileSize);
+    const mapHeight = Math.ceil(height / tileSize);
 
-    for (let y = 0; y < mapHeight; y++) {
-      for (let x = 0; x < mapWidth; x++) {
-        this.add.image(x * tileSize, y * tileSize + uiHeight, 'grass').setOrigin(0);
+    // --- Full Grass Grid (di tengah, sisain 1 tile atas & bawah) ---
+    for (let y = 1; y < mapHeight - 1; y++) {       // mulai dari 1, akhir mapHeight-1
+      for (let x = 1; x < mapWidth - 1; x++) {    // sisain 1 tile pinggir kiri & kanan
+        this.add.image(x * tileSize, y * tileSize, 'grass').setOrigin(0);
       }
     }
 
     // --- Frame pinggir coklat ---
-    const frameThickness = 8;
-    const frameColor = 0x8B4513; // coklat
-    // Top
-    this.add.rectangle(0, 0, width, frameThickness, frameColor).setOrigin(0);
-    // Bottom
-    this.add.rectangle(0, height - frameThickness, width, frameThickness, frameColor).setOrigin(0);
-    // Left
+    const frameThickness = tileSize;
+    const frameColor = 0x8B4513;
+
+    // Pinggir kiri
     this.add.rectangle(0, 0, frameThickness, height, frameColor).setOrigin(0);
-    // Right
+    // Pinggir kanan
     this.add.rectangle(width - frameThickness, 0, frameThickness, height, frameColor).setOrigin(0);
+    // Atas (1 tile)
+    this.add.rectangle(frameThickness, 0, width - frameThickness*2, frameThickness, frameColor).setOrigin(0);
+    // Bawah (1 tile)
+    this.add.rectangle(frameThickness, height - frameThickness, width - frameThickness*2, frameThickness, frameColor).setOrigin(0);
 
-    // --- UI Bar Background ---
-    this.add.rectangle(0, frameThickness, width, uiHeight - frameThickness, 0xeeeeee).setOrigin(0);
-
-    // --- Jam realtime + hari (fancy) ---
-    const timeText = this.add.text(width / 2, frameThickness + 8, '', {
+    // --- Jam realtime di atas frame (placeholder) ---
+    const timeText = this.add.text(width / 2, frameThickness/4, '', {
       fontFamily: 'Arial',
       fontSize: '18px',
-      color: '#000',
-      stroke: '#6b4f2c',      // stroke coklat gelap
-      strokeThickness: 3,
-      shadow: { x: 2, y: 2, color: '#888', blur: 2 }
+      color: '#fff',
+      stroke: '#6b4f2c',
+      strokeThickness: 2,
+      shadow: { x: 1, y: 1, color: '#000', blur: 2 }
     }).setOrigin(0.5, 0);
 
     this.time.addEvent({
@@ -55,12 +52,16 @@ export class FarmScene extends Phaser.Scene {
       loop: true,
       callback: () => {
         const now = new Date();
-        const hours = now.getHours().toString().padStart(2, '0');
-        const minutes = now.getMinutes().toString().padStart(2, '0');
-        const seconds = now.getSeconds().toString().padStart(2, '0');
+        const hours = now.getHours().toString().padStart(2,'0');
+        const minutes = now.getMinutes().toString().padStart(2,'0');
+        const seconds = now.getSeconds().toString().padStart(2,'0');
         const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
         const dayName = days[now.getDay()];
         timeText.setText(`${dayName} - ${hours}:${minutes}:${seconds}`);
       }
     });
+
+    // --- Frame bawah nanti bisa ditambahkan menu ---
+    // Placeholder: bisa diganti sprite / button nanti
   }
+}
