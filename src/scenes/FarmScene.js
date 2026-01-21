@@ -6,11 +6,9 @@ export default class FarmScene extends Phaser.Scene {
   preload() {
     // Load tiles
     this.load.image('grass', 'assets/tiles/grass.png');
-    this.load.image('soil', 'assets/tiles/soil.png');
-    this.load.image('fence', 'assets/objects/fence.png');
-    this.load.image('chickenCoop', 'assets/objects/chicken_coop.png');
-    this.load.image('cowBarn', 'assets/objects/cow_barn.png');
-    this.load.image('sheepBarn', 'assets/objects/sheep_barn.png');
+    this.load.image('chickenCoop', 'assets/objects/chickencoop.png');
+    this.load.image('cowBarn', 'assets/objects/barn.png');
+   
   }
 
   create() {
@@ -58,8 +56,7 @@ export default class FarmScene extends Phaser.Scene {
     }
 
     // --- Barns / coop ---
-    this.add.image(tileSize*1, tileSize*6, 'chickenCoop').setOrigin(0); 
-    this.add.image(tileSize*6, tileSize*6, 'cowBarn').setOrigin(0);
-    this.add.image(tileSize*3, tileSize*9, 'sheepBarn').setOrigin(0);
+    this.add.image(tileSize*1, tileSize*6, 'chickencoop').setOrigin(0); 
+    this.add.image(tileSize*6, tileSize*6, 'barn').setOrigin(0);
   }
 }
