@@ -3,12 +3,11 @@ export class BootScene extends Phaser.Scene {
     super('BootScene');
   }
 
-  create() {
-    this.add.text(60, 100, 'BOOT OK', {
-      fontSize: '20px',
-      color: '#000'
-    });
+  preload() {
+    this.load.image('title', 'assets/ui/title.png');
+  }
 
+  create() {
     this.scene.start('MenuScene');
   }
 }
