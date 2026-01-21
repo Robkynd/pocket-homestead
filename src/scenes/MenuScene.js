@@ -4,13 +4,23 @@ export class MenuScene extends Phaser.Scene {
   }
 
   create() {
-    this.add.text(40, 200, 'MENU OK - TAP TO START', {
-      fontSize: '18px',
-      color: '#000'
-    });
+    const text = this.add.text(
+      40,
+      200,
+      'MENU OK\nTAP TO START',
+      {
+        fontSize: '20px',
+        color: '#000',
+        align: 'center'
+      }
+    );
 
-    this.input.once('pointerdown', () => {
-      console.log('tap works');
+    // INI KUNCI NYA
+    text.setInteractive();
+
+    text.on('pointerdown', () => {
+      alert('TAP MASUK!');
+      // nanti: this.scene.start('FarmScene');
     });
   }
 }
