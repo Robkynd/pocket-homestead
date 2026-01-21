@@ -3,11 +3,10 @@ export class FarmScene extends Phaser.Scene {
     super('FarmScene');
     this.storeOpen = false;
     this.storageOpen = false;
-    this.playerStorage = [];
+    this.playerStorage = {};
   }
 
   preload() {
-    // Assets
     this.load.image('grass', 'assets/ui/grass.png');
     this.load.image('storeBtn', 'assets/ui/store.png');
     this.load.image('storageBtn', 'assets/ui/storage.png');
@@ -20,7 +19,7 @@ export class FarmScene extends Phaser.Scene {
     const sideThickness = 8;
     const frameColor = 0x8B4513;
 
-    const topFrameHeight = 35;
+    const topFrameHeight = 30;
     const bottomFrameHeight = 100;
 
     // --- Hitung map grass ---
@@ -43,7 +42,7 @@ export class FarmScene extends Phaser.Scene {
     this.add.rectangle(sideThickness, height - bottomFrameHeight, width - sideThickness*2, bottomFrameHeight, frameColor).setOrigin(0); // bawah
 
     // --- Jam realtime kiri atas ---
-    const timeText = this.add.text(sideThickness + 8, topFrameHeight/2, '', {
+    const timeText = this.add.text(sideThickness + 5, topFrameHeight/2, '', {
       fontFamily: 'Arial',
       fontSize: '14px',
       color: '#fff',
@@ -64,15 +63,18 @@ export class FarmScene extends Phaser.Scene {
       }
     });
 
-    // --- Player baru dapat bibit random 10 biji ---
+    // --- Player baru dapat bibit dan buah random ---
     const allSeeds = ['Carrot','Corn','Chili','Cabbage'];
-    for(let i=0;i<10;i++){
-      const randomSeed = allSeeds[Math.floor(Math.random()*allSeeds.length)];
-      this.playerStorage.push(randomSeed);
-    }
+    const allFruits = ['Strawberry','Pineapple','Watermelon','Orange'];
+    const allItems = [...allSeeds, ...allFruits];
+
+    allItems.forEach(item => {
+      this.playerStorage[item] = Math.floor(Math.random() * 5) + 1; // jumlah random 1-5
+    });
+
     console.log('Player initial storage:', this.playerStorage);
 
-    // --- Tombol Store di bawah tengah ---
+    // --- Tombol Store di bawah kanan ---
     const storeSize = 50;
     const storeBtn = this.add.image(width/2 + 40, height - bottomFrameHeight/2, 'storeBtn')
       .setDisplaySize(storeSize, storeSize)
@@ -83,7 +85,7 @@ export class FarmScene extends Phaser.Scene {
       if (!this.storeOpen) this.openStoreMenu();
     });
 
-    // --- Tombol Storage di bawah kiri store ---
+    // --- Tombol Storage di bawah kiri ---
     const storageBtn = this.add.image(width/2 - 40, height - bottomFrameHeight/2, 'storageBtn')
       .setDisplaySize(storeSize, storeSize)
       .setOrigin(0.5)
@@ -103,7 +105,6 @@ export class FarmScene extends Phaser.Scene {
     const bgHeight = height * 0.6;
 
     const bg = this.add.rectangle(width/2, height/2, bgWidth, bgHeight, 0x654321, 0.95).setOrigin(0.5);
-
     const title = this.add.text(width/2, height/2 - bgHeight/2 + 20, 'STORE', {
       fontSize: '20px',
       fontFamily: 'Arial',
@@ -117,46 +118,8 @@ export class FarmScene extends Phaser.Scene {
       padding: { x: 5, y: 2 }
     }).setOrigin(0.5,0).setInteractive();
 
-    const seeds = [
-      { name: 'Carrot', price: 10 },
-      { name: 'Corn', price: 12 },
-      { name: 'Chili', price: 8 },
-      { name: 'Cabbage', price: 15 }
-    ];
-
-    const fruits = [
-      { name: 'Strawberry', price: 20 },
-      { name: 'Pineapple', price: 25 },
-      { name: 'Watermelon', price: 30 },
-      { name: 'Orange', price: 22 }
-    ];
-
-    const itemTexts = [];
-    const padding = 30;
-    let startY = height/2 - 60;
-
-    const seedTitle = this.add.text(width/2 - bgWidth/4, startY - padding, 'Seeds', { fontSize: '16px', color: '#fff' }).setOrigin(0.5,0);
-    itemTexts.push(seedTitle);
-
-    seeds.forEach((item, idx) => {
-      const t = this.add.text(width/2 - bgWidth/4, startY + idx*22, `${item.name} - $${item.price}`, { fontSize: '14px', color: '#fff' }).setOrigin(0.5,0);
-      t.setInteractive({ useHandCursor: true });
-      t.on('pointerdown', () => console.log(`Buy ${item.name} for $${item.price} (2% fee to dev)`));
-      itemTexts.push(t);
-    });
-
-    const fruitTitle = this.add.text(width/2 + bgWidth/4, startY - padding, 'Fruits', { fontSize: '16px', color: '#fff' }).setOrigin(0.5,0);
-    itemTexts.push(fruitTitle);
-
-    fruits.forEach((item, idx) => {
-      const t = this.add.text(width/2 + bgWidth/4, startY + idx*22, `${item.name} - $${item.price}`, { fontSize: '14px', color: '#fff' }).setOrigin(0.5,0);
-      t.setInteractive({ useHandCursor: true });
-      t.on('pointerdown', () => console.log(`Buy ${item.name} for $${item.price} (2% fee to dev)`));
-      itemTexts.push(t);
-    });
-
     closeBtn.on('pointerdown', () => {
-      [bg, title, closeBtn, ...itemTexts].forEach(e => e.destroy());
+      [bg, title, closeBtn].forEach(e => e.destroy());
       this.storeOpen = false;
     });
   }
@@ -168,7 +131,6 @@ export class FarmScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const bgWidth = width * 0.85;
     const bgHeight = height * 0.6;
-
     const bg = this.add.rectangle(width/2, height/2, bgWidth, bgHeight, 0x444444, 0.95).setOrigin(0.5);
 
     const title = this.add.text(width/2, height/2 - bgHeight/2 + 20, 'STORAGE', {
@@ -184,12 +146,23 @@ export class FarmScene extends Phaser.Scene {
       padding: { x: 5, y: 2 }
     }).setOrigin(0.5,0).setInteractive();
 
-    const itemTexts = [];
-    let startY = height/2 - bgHeight/2 + 60;
+    // --- Table header ---
+    const startY = height/2 - bgHeight/2 + 60;
+    const colX1 = width/2 - 50; // Seed/Fruit Name
+    const colX2 = width/2 + 50; // Quantity
 
-    this.playerStorage.forEach((item, idx) => {
-      const t = this.add.text(width/2, startY + idx*22, `${item}`, { fontSize: '14px', color: '#fff' }).setOrigin(0.5,0);
-      itemTexts.push(t);
+    const headerName = this.add.text(colX1, startY, 'Seed/Fruit', { fontSize: '14px', color: '#fff' }).setOrigin(0.5,0);
+    const headerQty  = this.add.text(colX2, startY, 'Quantity', { fontSize: '14px', color: '#fff' }).setOrigin(0.5,0);
+
+    const itemTexts = [headerName, headerQty];
+
+    let rowY = startY + 20;
+
+    Object.keys(this.playerStorage).forEach((item) => {
+      const nameText = this.add.text(colX1, rowY, item, { fontSize: '14px', color: '#fff' }).setOrigin(0.5,0);
+      const qtyText  = this.add.text(colX2, rowY, this.playerStorage[item], { fontSize: '14px', color: '#fff' }).setOrigin(0.5,0);
+      itemTexts.push(nameText, qtyText);
+      rowY += 20;
     });
 
     closeBtn.on('pointerdown', () => {
