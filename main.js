@@ -1,6 +1,6 @@
 import { BootScene } from './src/scenes/BootScene.js';
 import { MenuScene } from './src/scenes/MenuScene.js';
-import { MenuScene } from './src/scenes/FarmScene.js';
+import { FarmScene } from './src/scenes/FarmScene.js';
 
 const config = {
   type: Phaser.AUTO,
