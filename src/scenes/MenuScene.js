@@ -26,8 +26,8 @@ export class MenuScene extends Phaser.Scene {
     .setInteractive();
 
     btn.on('pointerdown', () => {
-      alert('GAME SEDANG TAHAP BUILD');
-      //this.scene.start('FarmScene');
+      alert('KENAL KOJIM GA?');
+      this.scene.start('FarmScene');
     });
   }
 }
