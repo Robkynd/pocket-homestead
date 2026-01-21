@@ -4,7 +4,7 @@ export class FarmScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('grass', 'assets/ui/barn.png');
+    this.load.image('grass', 'assets/ui/grass.png');
     this.load.image('chickenCoop', 'assets/ui/chickencoop.png');
     this.load.image('barn', 'assets/ui/barn.png');
   }
