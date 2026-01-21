@@ -1,17 +1,19 @@
-console.log('MAIN JS LOADED');
+import BootScene from './scenes/BootScene.js';
+import MenuScene from './scenes/MenuScene.js';
+import FarmScene from './scenes/FarmScene.js';
 
 const config = {
   type: Phaser.AUTO,
-  width: 360,
-  height: 640,
-  backgroundColor: '#87ceeb',
-  scene: {
-    create() {
-      this.add.text(50, 100, 'PHASER OK', {
-        color: '#000'
-      });
-    }
-  }
+  width: window.innerWidth,
+  height: window.innerHeight,
+  backgroundColor: '#000000',
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH
+  },
+  scene: [BootScene, MenuScene, FarmScene]
 };
 
 new Phaser.Game(config);
+
+console.log('Main.js loaded + scenes imported');
