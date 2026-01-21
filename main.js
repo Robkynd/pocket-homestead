@@ -1,5 +1,5 @@
-import BootScene from './src/scenes/BootScene.js';
-import MenuScene from './src/scenes/MenuScene.js';
+import { BootScene } from './src/scenes/BootScene.js';
+import { MenuScene } from './src/scenes/MenuScene.js';
 
 const config = {
   type: Phaser.AUTO,
