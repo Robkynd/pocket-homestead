@@ -28,6 +28,11 @@ export class MenuScene extends Phaser.Scene {
     btn.on('pointerdown', () => {
       alert('MASUK GAME');
       // this.scene.start('FarmScene');
-    });
+      
+    });startText.setInteractive();
+
+startText.on('pointerdown', () => {
+  this.scene.start('FarmScene');
+});
   }
 }
