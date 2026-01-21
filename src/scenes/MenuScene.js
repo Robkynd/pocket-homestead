@@ -4,23 +4,30 @@ export class MenuScene extends Phaser.Scene {
   }
 
   create() {
-    const text = this.add.text(
-      40,
-      200,
-      'MENU OK\nTAP TO START',
+    const { width, height } = this.scale;
+
+    // BACKGROUND IMAGE
+    this.add.image(width / 2, height / 2, 'title')
+      .setDisplaySize(width, height);
+
+    // BUTTON LOGIN
+    const btn = this.add.text(
+      width / 2,
+      height - 90,
+      'LOG IN',
       {
-        fontSize: '20px',
-        color: '#000',
-        align: 'center'
+        fontSize: '22px',
+        color: '#fff',
+        backgroundColor: '#6b4f2c',
+        padding: { x: 18, y: 10 }
       }
-    );
+    )
+    .setOrigin(0.5)
+    .setInteractive();
 
-    // INI KUNCI NYA
-    text.setInteractive();
-
-    text.on('pointerdown', () => {
-      alert('TAP MASUK!');
-      // nanti: this.scene.start('FarmScene');
+    btn.on('pointerdown', () => {
+      alert('MASUK GAME');
+      // this.scene.start('FarmScene');
     });
   }
 }
