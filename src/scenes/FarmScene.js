@@ -6,7 +6,6 @@ export class FarmScene extends Phaser.Scene {
   preload() {
     this.load.image('grass', 'assets/ui/grass.png');       // tile grass
     this.load.image('storeBtn', 'assets/ui/store.png');   // button store image
-    // nanti bisa load icon store item di sini
   }
 
   create() {
@@ -16,34 +15,42 @@ export class FarmScene extends Phaser.Scene {
     const sideThickness = 8;
     const frameColor = 0x8B4513;
 
+    // --- Atur tinggi frame ---
+    const topFrameHeight = 48;      // lebih kecil dari sebelumnya
+    const bottomFrameHeight = 80;   // lebih lebar
+    const leftRightThickness = sideThickness;
+
     // --- Hitung jumlah tile horizontal & vertikal untuk grass ---
-    const mapWidth = Math.ceil((width - sideThickness*2) / tileSize);
-    const mapHeight = Math.ceil((height - tileSize*2) / tileSize);
+    const mapWidth = Math.ceil((width - leftRightThickness*2) / tileSize);
+    const mapHeight = Math.ceil((height - topFrameHeight - bottomFrameHeight) / tileSize);
 
     // --- Full Grass Grid di tengah ---
-    for (let y = 1; y <= mapHeight; y++) {
-      for (let x = 1; x <= mapWidth; x++) {
-        const posX = sideThickness + (x-1)*tileSize;
-        const posY = tileSize + (y-1)*tileSize;
+    for (let y = 0; y < mapHeight; y++) {
+      for (let x = 0; x < mapWidth; x++) {
+        const posX = leftRightThickness + x*tileSize;
+        const posY = topFrameHeight + y*tileSize;
         this.add.image(posX, posY, 'grass').setOrigin(0);
       }
     }
 
     // --- Frame pinggir ---
-    this.add.rectangle(0, 0, sideThickness, height, frameColor).setOrigin(0); // kiri
-    this.add.rectangle(width - sideThickness, 0, sideThickness, height, frameColor).setOrigin(0); // kanan
-    this.add.rectangle(sideThickness, 0, width - sideThickness*2, tileSize, frameColor).setOrigin(0); // atas
-    this.add.rectangle(sideThickness, height - tileSize, width - sideThickness*2, tileSize, frameColor).setOrigin(0); // bawah
+    // Kiri & kanan tipis
+    this.add.rectangle(0, 0, leftRightThickness, height, frameColor).setOrigin(0); // kiri
+    this.add.rectangle(width - leftRightThickness, 0, leftRightThickness, height, frameColor).setOrigin(0); // kanan
 
-    // --- Jam realtime di atas ---
-    const timeText = this.add.text(width / 2, tileSize/4, '', {
+    // Atas & bawah
+    this.add.rectangle(leftRightThickness, 0, width - leftRightThickness*2, topFrameHeight, frameColor).setOrigin(0); // atas
+    this.add.rectangle(leftRightThickness, height - bottomFrameHeight, width - leftRightThickness*2, bottomFrameHeight, frameColor).setOrigin(0); // bawah
+
+    // --- Jam realtime di kiri atas ---
+    const timeText = this.add.text(leftRightThickness + 10, topFrameHeight/2, '', {
       fontFamily: 'Arial',
-      fontSize: '18px',
+      fontSize: '16px',
       color: '#fff',
       stroke: '#6b4f2c',
       strokeThickness: 2,
       shadow: { x: 1, y: 1, color: '#000', blur: 2 }
-    }).setOrigin(0.5, 0);
+    }).setOrigin(0, 0.5);
 
     this.time.addEvent({
       delay: 1000,
@@ -59,14 +66,14 @@ export class FarmScene extends Phaser.Scene {
       }
     });
 
-    // --- Tombol STORE pakai gambar ---
-    const storeWidth = 80;  // ukuran gambar button
+    // --- Tombol STORE pakai gambar di frame bawah tengah ---
+    const storeWidth = 80;
     const storeHeight = 40;
 
-    const storeBtn = this.add.image(width / 2, height - tileSize / 2, 'storeBtn')
+    const storeBtn = this.add.image(width / 2, height - bottomFrameHeight / 2, 'storeBtn')
       .setDisplaySize(storeWidth, storeHeight)
       .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true });  // cursor pointer
+      .setInteractive({ useHandCursor: true });
 
     storeBtn.on('pointerdown', () => {
       this.openStoreMenu();
