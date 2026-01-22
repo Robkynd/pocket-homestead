@@ -14,7 +14,9 @@ export class BootScene extends Phaser.Scene {
     const { width, height } = this.scale;
 
     // --- Logo ---
-    this.add.image(width/2, height/2, 'title').setOrigin(0.5);
+    this.add.image(width/2, height/2, 'title')
+  .setOrigin(0.5)
+  .setDisplaySize(width, height); // fit ke layar
 
     // --- Play musik ---
     this.sound.play('bootMusic', { loop: true, volume: 0.5 });
