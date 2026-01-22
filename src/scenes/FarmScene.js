@@ -91,9 +91,11 @@ export class FarmScene extends Phaser.Scene {
       strokeThickness: 2
     }).setOrigin(0,0.5);
 
-    // --- Season kanan atas (masuk frame) ---
+    // --- Season kanan atas (masuk frame, rapi) ---
     const rightPadding = 5;
     const seasonSize = 30;
+    const textGap = 6;
+
     this.seasonImage = this.add.image(0,0,'Spring')
       .setOrigin(0.5,0.5)
       .setDisplaySize(seasonSize, seasonSize);
@@ -104,9 +106,9 @@ export class FarmScene extends Phaser.Scene {
       color:'#fff',
       stroke:'#6b4f2c',
       strokeThickness:2
-    }).setOrigin(0,0.5);
+    }).setOrigin(1,0.5); // kanan text nempel ke kiri image
 
-    this.positionSeason(width, frameThicknessSide, frameHeightTop, rightPadding, seasonSize);
+    this.positionSeason(width, frameThicknessSide, frameHeightTop, rightPadding, seasonSize, textGap);
     this.updateSeason();
 
     // --- Update clock & season setiap detik ---
@@ -143,14 +145,12 @@ export class FarmScene extends Phaser.Scene {
     }
   }
 
-  positionSeason(width, frameThicknessSide, frameHeightTop, rightPadding, seasonSize){
-    // Posisi image
+  positionSeason(width, frameThicknessSide, frameHeightTop, rightPadding, seasonSize, textGap){
     this.seasonImage.x = width - frameThicknessSide - seasonSize/2 - rightPadding;
     this.seasonImage.y = frameHeightTop/2;
 
-    // Posisi text di kiri image
-    this.seasonText.x = this.seasonImage.x - seasonSize/2 - 5;
-    this.seasonText.y = frameHeightTop/2;
+    this.seasonText.x = this.seasonImage.x - seasonSize/2 - textGap;
+    this.seasonText.y = this.seasonImage.y;
   }
 
   updateSeason(){
@@ -168,7 +168,6 @@ export class FarmScene extends Phaser.Scene {
 
   plantSeed(tile, tileSize){
     if(tile.texture.key === 'dirt') return;
-
     tile.setTexture('dirt');
     tile.setDisplaySize(tileSize, tileSize);
   }
