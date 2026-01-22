@@ -3,10 +3,12 @@ export class FarmScene extends Phaser.Scene {
     super('FarmScene');
     this.storeOpen = false;
     this.storageOpen = false;
+    this.tileSprites = []; // simpan semua tile sprite untuk interaksi
   }
 
   preload() {
     this.load.image('grass', 'assets/ui/grass.png');
+    this.load.image('dirt', 'assets/ui/dirt.png');
     this.load.image('storeBtn', 'assets/ui/store.png');
     this.load.image('storageBtn', 'assets/ui/storage.png');
   }
@@ -37,10 +39,21 @@ export class FarmScene extends Phaser.Scene {
     graphics.lineStyle(1, 0x000000, 0.4);
 
     for (let y = 0; y < tileRows; y++) {
+      this.tileSprites[y] = [];
       for (let x = 0; x < tileCols; x++) {
         const posX = offsetX + x*tileSize;
         const posY = offsetY + y*tileSize;
-        this.add.image(posX, posY, 'grass').setOrigin(0).setDisplaySize(tileSize, tileSize);
+        const tile = this.add.image(posX, posY, 'grass')
+          .setOrigin(0)
+          .setDisplaySize(tileSize, tileSize)
+          .setInteractive({useHandCursor:true});
+
+        // tiap tile bisa di tap → ganti jadi dirt
+        tile.on('pointerdown', () => {
+          tile.setTexture('dirt');
+        });
+
+        this.tileSprites[y][x] = tile;
         graphics.strokeRect(posX, posY, tileSize, tileSize);
       }
     }
@@ -105,12 +118,6 @@ export class FarmScene extends Phaser.Scene {
       fontSize:'18px', color:'#fff', backgroundColor:'#8B0000', padding:{x:5,y:2}
     }).setOrigin(0.5,0).setInteractive();
 
-    closeBtn.on('pointerdown', () => {
-      [bg, title, closeBtn, ...itemTexts].forEach(e=>e.destroy());
-      this.storeOpen = false;
-    });
-
-    // --- Store Items ---
     const storeItems = [
       {name:'Carrot', price:2}, {name:'Corn', price:3}, {name:'Chili', price:1}, {name:'Cabbage', price:4},
       {name:'Strawberry', price:5}, {name:'Pineapple', price:6}, {name:'Watermelon', price:7}, {name:'Orange', price:4}
@@ -126,6 +133,11 @@ export class FarmScene extends Phaser.Scene {
       const priceText = this.add.text(colX2,rowY,item.price + ' $',{fontSize:'14px',color:'#fff'}).setOrigin(0.5,0);
       itemTexts.push(nameText, priceText);
       rowY += 20;
+    });
+
+    closeBtn.on('pointerdown', () => {
+      [bg, title, closeBtn, ...itemTexts].forEach(e=>e.destroy());
+      this.storeOpen = false;
     });
   }
 
@@ -146,13 +158,7 @@ export class FarmScene extends Phaser.Scene {
       fontSize:'18px', color:'#fff', backgroundColor:'#8B0000', padding:{x:5,y:2}
     }).setOrigin(0.5,0).setInteractive();
 
-    closeBtn.on('pointerdown', () => {
-      [bg, title, closeBtn, ...itemTexts].forEach(e=>e.destroy());
-      this.storageOpen = false;
-    });
-
-    // --- Dummy storage ---
-    this.playerStorage = {
+    this.playerStorage = this.playerStorage || {
       'Carrot':2, 'Corn':3, 'Chili':1, 'Cabbage':4,
       'Strawberry':2, 'Pineapple':1, 'Watermelon':1, 'Orange':3
     };
@@ -167,6 +173,11 @@ export class FarmScene extends Phaser.Scene {
       const qtyText = this.add.text(colX2,rowY,this.playerStorage[item],{fontSize:'14px',color:'#fff'}).setOrigin(0.5,0);
       itemTexts.push(nameText, qtyText);
       rowY += 20;
+    });
+
+    closeBtn.on('pointerdown', () => {
+      [bg, title, closeBtn, ...itemTexts].forEach(e=>e.destroy());
+      this.storageOpen = false;
     });
   }
 }
