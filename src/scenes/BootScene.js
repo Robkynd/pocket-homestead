@@ -4,10 +4,24 @@ export class BootScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('title', 'assets/ui/title.png');
+    // Load assets
+    this.load.image('logo', 'assets/ui/logo.png');
+    // Load musik boot
+    this.load.audio('bootMusic', 'assets/sound/boot.mp3');
   }
 
   create() {
-    this.scene.start('MenuScene');
+    const { width, height } = this.scale;
+
+    // --- Logo ---
+    this.add.image(width/2, height/2, 'logo').setOrigin(0.5);
+
+    // --- Play musik ---
+    this.sound.play('bootMusic', { loop: true, volume: 0.5 });
+
+    // --- Timer untuk lanjut ke MenuScene ---
+    this.time.delayedCall(2000, () => {
+      this.scene.start('MenuScene');
+    });
   }
 }
