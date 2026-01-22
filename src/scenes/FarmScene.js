@@ -15,41 +15,48 @@ export class FarmScene extends Phaser.Scene {
     const width = this.scale.width;
     const height = this.scale.height;
 
-    const sideThickness = 8;
-    const topFrameHeight = 30;
-    const bottomFrameHeight = 100;
+    // --- Frame settings ---
+    const frameThicknessSide = 8;
+    const frameHeightTop = 40;
+    const frameHeightBottom = 120;
     const frameColor = 0x8B4513;
 
     // --- Hitung area grass ---
-    const areaWidth = width - sideThickness * 2;
-    const areaHeight = height - topFrameHeight - bottomFrameHeight;
+    const areaWidth = width - frameThicknessSide*2;
+    const areaHeight = height - frameHeightTop - frameHeightBottom;
 
-    // --- Tentuin ukuran tile persegi maksimal ---
-    const tileSize = Math.floor(Math.min(areaWidth / 12, areaHeight / 24));
+    // --- Bagi tile 4 horizontal & vertikal ---
+    const tileCols = 4;
+    const tileRows = 4;
+    const tileWidth = areaWidth / tileCols;
+    const tileHeight = areaHeight / tileRows;
+    const tileSize = Math.min(tileWidth, tileHeight);
 
-    // --- Hitung jumlah tile horizontal & vertikal ---
-    const mapWidth = Math.floor(areaWidth / tileSize);
-    const mapHeight = Math.floor(areaHeight / tileSize);
+    // --- Hitung offset untuk posisikan grass ditengah ---
+    const offsetX = frameThicknessSide + (areaWidth - tileSize*tileCols)/2;
+    const offsetY = frameHeightTop + (areaHeight - tileSize*tileRows)/2;
 
-    console.log('tileSize:', tileSize, 'mapWidth:', mapWidth, 'mapHeight:', mapHeight);
+    // --- Full Grass Grid & Grid lines ---
+    const graphics = this.add.graphics();
+    graphics.lineStyle(1, 0x000000, 0.3); // garis tipis grid
 
-    // --- Full Grass Grid ---
-    for (let y = 0; y < mapHeight; y++) {
-      for (let x = 0; x < mapWidth; x++) {
-        const posX = sideThickness + x * tileSize;
-        const posY = topFrameHeight + y * tileSize;
+    for (let y = 0; y < tileRows; y++) {
+      for (let x = 0; x < tileCols; x++) {
+        const posX = offsetX + x * tileSize;
+        const posY = offsetY + y * tileSize;
         this.add.image(posX, posY, 'grass').setOrigin(0).setDisplaySize(tileSize, tileSize);
+        graphics.strokeRect(posX, posY, tileSize, tileSize);
       }
     }
 
     // --- Frame pinggir ---
-    this.add.rectangle(0, 0, sideThickness, height, frameColor).setOrigin(0); // kiri
-    this.add.rectangle(width - sideThickness, 0, sideThickness, height, frameColor).setOrigin(0); // kanan
-    this.add.rectangle(sideThickness, 0, width - sideThickness*2, topFrameHeight, frameColor).setOrigin(0); // atas
-    this.add.rectangle(sideThickness, height - bottomFrameHeight, width - sideThickness*2, bottomFrameHeight, frameColor).setOrigin(0); // bawah
+    this.add.rectangle(0, 0, frameThicknessSide, height, frameColor).setOrigin(0); // kiri
+    this.add.rectangle(width - frameThicknessSide, 0, frameThicknessSide, height, frameColor).setOrigin(0); // kanan
+    this.add.rectangle(frameThicknessSide, 0, width - frameThicknessSide*2, frameHeightTop, frameColor).setOrigin(0); // atas
+    this.add.rectangle(frameThicknessSide, height - frameHeightBottom, width - frameThicknessSide*2, frameHeightBottom, frameColor).setOrigin(0); // bawah
 
     // --- Jam realtime kiri atas ---
-    const timeText = this.add.text(sideThickness + 5, topFrameHeight/2, '', {
+    const timeText = this.add.text(frameThicknessSide + 5, frameHeightTop/2, '', {
       fontFamily: 'Arial',
       fontSize: '14px',
       color: '#fff',
@@ -70,8 +77,8 @@ export class FarmScene extends Phaser.Scene {
       }
     });
 
-    // --- Tombol Store di bawah kanan ---
-    const storeBtn = this.add.image(width/2 + 40, height - bottomFrameHeight/2, 'storeBtn')
+    // --- Tombol Store bawah kanan ---
+    const storeBtn = this.add.image(width/2 + 40, height - frameHeightBottom/2, 'storeBtn')
       .setDisplaySize(50, 50)
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
@@ -80,8 +87,8 @@ export class FarmScene extends Phaser.Scene {
       if (!this.storeOpen) this.openStoreMenu();
     });
 
-    // --- Tombol Storage di bawah kiri ---
-    const storageBtn = this.add.image(width/2 - 40, height - bottomFrameHeight/2, 'storageBtn')
+    // --- Tombol Storage bawah kiri ---
+    const storageBtn = this.add.image(width/2 - 40, height - frameHeightBottom/2, 'storageBtn')
       .setDisplaySize(50, 50)
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
