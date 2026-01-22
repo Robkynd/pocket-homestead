@@ -1,13 +1,192 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Pocket Homestead</title>
-
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Mini Stardew Web</title>
+<style>
+html,body{
+  margin:0;
+  padding:0;
+  background:#222;
+  touch-action:none;
+}
+canvas{
+  display:block;
+  margin:auto;
+  background:#5c94fc;
+}
+#ui{
+  position:fixed;
+  bottom:10px;
+  left:10px;
+  right:10px;
+  display:flex;
+  justify-content:space-between;
+  pointer-events:none;
+}
+.btn{
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.2);
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  pointer-events:auto;
+  user-select:none;
+}
+</style>
 </head>
 <body>
-  <script type="module" src="./main.js"></script>
+
+<canvas id="game"></canvas>
+
+<div id="ui">
+  <div class="btn" id="btnAction">ACTION</div>
+  <div class="btn" id="btnPlant">PLANT</div>
+</div>
+
+<script>
+// ================= CONFIG =================
+const TILE = 32;
+const MAP_W = 20;
+const MAP_H = 15;
+
+const canvas = document.getElementById("game");
+canvas.width = MAP_W * TILE;
+canvas.height = MAP_H * TILE;
+const ctx = canvas.getContext("2d");
+
+// ================= MAP =================
+const TILE_GRASS = 0;
+const TILE_DIRT = 1;
+const TILE_PLANTED = 2;
+
+let map = [];
+let plants = {};
+
+for(let y=0;y<MAP_H;y++){
+  map[y]=[];
+  for(let x=0;x<MAP_W;x++){
+    map[y][x]=TILE_GRASS;
+  }
+}
+
+// ================= PLAYER =================
+let player = {
+  x:10,
+  y:7,
+  seed:5,
+  crop:0
+};
+
+// ================= INPUT =================
+let keys = {};
+window.addEventListener("keydown",e=>keys[e.key]=true);
+window.addEventListener("keyup",e=>keys[e.key]=false);
+
+let touchDir = {x:0,y:0};
+canvas.addEventListener("touchmove",e=>{
+  let t=e.touches[0];
+  let r=canvas.getBoundingClientRect();
+  touchDir.x = t.clientX - r.left - canvas.width/2;
+  touchDir.y = t.clientY - r.top - canvas.height/2;
+});
+
+canvas.addEventListener("touchend",()=>touchDir={x:0,y:0});
+
+// ================= ACTION =================
+document.getElementById("btnAction").onclick=()=>{
+  let tx=player.x;
+  let ty=player.y;
+  if(map[ty][tx]===TILE_GRASS){
+    map[ty][tx]=TILE_DIRT;
+  }else if(map[ty][tx]===TILE_PLANTED){
+    if(plants[tx+","+ty]>=5){
+      map[ty][tx]=TILE_DIRT;
+      delete plants[tx+","+ty];
+      player.crop++;
+    }
+  }
+};
+
+document.getElementById("btnPlant").onclick=()=>{
+  let tx=player.x;
+  let ty=player.y;
+  if(map[ty][tx]===TILE_DIRT && player.seed>0){
+    map[ty][tx]=TILE_PLANTED;
+    plants[tx+","+ty]=0;
+    player.seed--;
+  }
+};
+
+// ================= UPDATE =================
+function update(){
+  let dx=0,dy=0;
+  if(keys["ArrowUp"]||keys["w"])dy=-1;
+  if(keys["ArrowDown"]||keys["s"])dy=1;
+  if(keys["ArrowLeft"]||keys["a"])dx=-1;
+  if(keys["ArrowRight"]||keys["d"])dx=1;
+
+  if(touchDir.x||touchDir.y){
+    if(Math.abs(touchDir.x)>Math.abs(touchDir.y)){
+      dx=Math.sign(touchDir.x);
+    }else{
+      dy=Math.sign(touchDir.y);
+    }
+  }
+
+  if(dx||dy){
+    player.x=Math.max(0,Math.min(MAP_W-1,player.x+dx));
+    player.y=Math.max(0,Math.min(MAP_H-1,player.y+dy));
+  }
+
+  for(let k in plants){
+    plants[k]+=0.01;
+  }
+}
+
+// ================= DRAW =================
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  for(let y=0;y<MAP_H;y++){
+    for(let x=0;x<MAP_W;x++){
+      let t=map[y][x];
+      if(t===TILE_GRASS)ctx.fillStyle="#4caf50";
+      if(t===TILE_DIRT)ctx.fillStyle="#8d6e63";
+      if(t===TILE_PLANTED)ctx.fillStyle="#6d4c41";
+      ctx.fillRect(x*TILE,y*TILE,TILE,TILE);
+
+      if(t===TILE_PLANTED){
+        let g=Math.min(plants[x+","+y],5);
+        ctx.fillStyle="#2e7d32";
+        ctx.fillRect(x*TILE+8,y*TILE+16-g*2,16,g*2);
+      }
+    }
+  }
+
+  // Player
+  ctx.fillStyle="#ffeb3b";
+  ctx.fillRect(player.x*TILE+8,player.y*TILE+8,16,16);
+
+  // UI text
+  ctx.fillStyle="white";
+  ctx.font="14px monospace";
+  ctx.fillText("Seed:"+player.seed+" Crop:"+player.crop,10,15);
+}
+
+// ================= LOOP =================
+function loop(){
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+
 </body>
 </html>
