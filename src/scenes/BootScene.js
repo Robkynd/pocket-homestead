@@ -5,7 +5,7 @@ export class BootScene extends Phaser.Scene {
 
   preload() {
     // Load assets
-    this.load.image('logo', 'assets/ui/title.png');
+    this.load.image('title', 'assets/ui/title.png');
     // Load musik boot
     this.load.audio('bootMusic', 'assets/sound/boot.mp3');
   }
@@ -14,7 +14,7 @@ export class BootScene extends Phaser.Scene {
     const { width, height } = this.scale;
 
     // --- Logo ---
-    this.add.image(width/2, height/2, 'logo').setOrigin(0.5);
+    this.add.image(width/2, height/2, 'title').setOrigin(0.5);
 
     // --- Play musik ---
     this.sound.play('bootMusic', { loop: true, volume: 0.5 });
