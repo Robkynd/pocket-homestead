@@ -1,16 +1,35 @@
 export class FarmScene extends Phaser.Scene {
   constructor() {
     super('FarmScene');
+    this.tileSprites = [];
+    this.playerStorage = {};
     this.storeOpen = false;
     this.storageOpen = false;
-    this.tileSprites = [];
+    this.seedGrowTime = {
+      Carrot: 60,
+      Corn: 90,
+      Chili: 45,
+      Cabbage: 120,
+      Strawberry: 60,
+      Pineapple: 150,
+      Watermelon: 180,
+      Orange: 90
+    };
+    this.seasons = ['Spring', 'Summer', 'Autumn', 'Winter'];
   }
 
   preload() {
+    // Tiles & UI
     this.load.image('grass', 'assets/ui/grass.png');
     this.load.image('dirt', 'assets/ui/dirt.png');
     this.load.image('storeBtn', 'assets/ui/store.png');
     this.load.image('storageBtn', 'assets/ui/storage.png');
+
+    // Season images
+    this.load.image('Spring', 'assets/ui/spring.png');
+    this.load.image('Summer', 'assets/ui/summer.png');
+    this.load.image('Autumn', 'assets/ui/autum.png');
+    this.load.image('Winter', 'assets/ui/winter.png');
   }
 
   create() {
@@ -49,11 +68,7 @@ export class FarmScene extends Phaser.Scene {
           .setDisplaySize(tileSize, tileSize)
           .setInteractive({useHandCursor:true});
 
-        tile.on('pointerdown', () => {
-          tile.setTexture('dirt');
-          tile.setDisplaySize(tileSize, tileSize); // pastikan nge-fit
-        });
-
+        tile.on('pointerdown', () => this.plantSeed(tile, tileSize));
         this.tileSprites[y][x] = tile;
         graphics.strokeRect(posX, posY, tileSize, tileSize);
       }
@@ -74,6 +89,22 @@ export class FarmScene extends Phaser.Scene {
       strokeThickness: 2
     }).setOrigin(0,0.5);
 
+    // --- Season kanan atas ---
+    this.seasonImage = this.add.image(width - frameThicknessSide - 40, frameHeightTop/2, 'Spring')
+      .setOrigin(0.5,0.5)
+      .setDisplaySize(30,30);
+
+    this.seasonText = this.add.text(width - frameThicknessSide - 10, frameHeightTop/2, 'Spring', {
+      fontFamily: 'Arial',
+      fontSize: '14px',
+      color:'#fff',
+      stroke:'#6b4f2c',
+      strokeThickness: 2
+    }).setOrigin(0,0.5);
+
+    this.updateSeason(); // set season pertama
+
+    // --- Update clock & season setiap detik ---
     this.time.addEvent({
       delay: 1000,
       loop: true,
@@ -84,10 +115,11 @@ export class FarmScene extends Phaser.Scene {
         const seconds = now.getSeconds().toString().padStart(2,'0');
         const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
         timeText.setText(`${days[now.getDay()]} - ${hours}:${minutes}:${seconds}`);
+        this.updateSeason();
       }
     });
 
-    // --- Tombol Store & Storage ---
+    // --- Store & Storage buttons ---
     const storeBtn = this.add.image(width/2 + 40, height - frameHeightBottom/2, 'storeBtn')
       .setDisplaySize(50,50).setOrigin(0.5).setInteractive({useHandCursor:true});
 
@@ -96,9 +128,55 @@ export class FarmScene extends Phaser.Scene {
 
     storeBtn.on('pointerdown', () => { if(!this.storeOpen) this.openStoreMenu(); });
     storageBtn.on('pointerdown', () => { if(!this.storageOpen) this.openStorageMenu(); });
+
+    // --- Setup player storage jika baru ---
+    if(Object.keys(this.playerStorage).length===0){
+      const seeds = ['Carrot','Corn','Chili','Cabbage','Strawberry','Pineapple','Watermelon','Orange'];
+      seeds.forEach(seed=>{
+        this.playerStorage[seed] = Phaser.Math.Between(1,3); // random 1-3 bibit
+      });
+    }
   }
 
-  openStoreMenu() {
+  updateSeason(){
+    const now = new Date();
+    const startYear = 2026;
+    const startDate = new Date(startYear,0,1); // 1 Jan 2026
+    const dayOfYear = Math.floor((now - startDate)/(1000*60*60*24)) + 1;
+
+    const seasonIndex = Math.floor((dayOfYear-1)/5) % 4;
+    const seasonName = this.seasons[seasonIndex];
+
+    this.seasonImage.setTexture(seasonName);
+    this.seasonText.setText(seasonName);
+  }
+
+  plantSeed(tile, tileSize){
+    if(tile.texture.key === 'dirt') return; // udah ditanami
+
+    const availableSeeds = Object.keys(this.playerStorage).filter(s => this.playerStorage[s] > 0);
+    if(availableSeeds.length === 0) return;
+
+    const seed = availableSeeds[Phaser.Math.Between(0, availableSeeds.length-1)];
+    this.playerStorage[seed]--;
+
+    tile.setTexture('dirt');
+    tile.setDisplaySize(tileSize, tileSize);
+
+    let baseTime = this.seedGrowTime[seed] || 60;
+    switch(this.seasonText.text){
+      case 'Summer': baseTime *= 0.8; break;
+      case 'Autumn': baseTime *= 1.0; break;
+      case 'Winter': baseTime *= 1.5; break;
+      case 'Spring': baseTime *= 1.0; break;
+    }
+
+    this.time.delayedCall(baseTime*1000, () => {
+      console.log(`Tile grown: ${seed} after ${Math.round(baseTime)}s`);
+    });
+  }
+
+  openStoreMenu(){
     if(this.storeOpen) return;
     this.storeOpen = true;
 
@@ -110,30 +188,10 @@ export class FarmScene extends Phaser.Scene {
     const title = this.add.text(width/2, height - bgHeight + 20, 'STORE', { fontSize:'20px', fontFamily:'Arial', color:'#fff'}).setOrigin(0.5,0);
     const closeBtn = this.add.text(width/2 + bgWidth/2 - 20, height - bgHeight + 20, 'X', { fontSize:'18px', color:'#fff', backgroundColor:'#8B0000', padding:{x:5,y:2} }).setOrigin(0.5,0).setInteractive();
 
-    const storeItems = [
-      {name:'Carrot', price:2}, {name:'Corn', price:3}, {name:'Chili', price:1}, {name:'Cabbage', price:4},
-      {name:'Strawberry', price:5}, {name:'Pineapple', price:6}, {name:'Watermelon', price:7}, {name:'Orange', price:4}
-    ];
-
-    const itemTexts = [];
-    let rowY = height - bgHeight + 60;
-    const colX1 = width/2 - 50;
-    const colX2 = width/2 + 50;
-
-    storeItems.forEach(item=>{
-      const nameText = this.add.text(colX1,rowY,item.name,{fontSize:'14px',color:'#fff'}).setOrigin(0.5,0);
-      const priceText = this.add.text(colX2,rowY,item.price + ' $',{fontSize:'14px',color:'#fff'}).setOrigin(0.5,0);
-      itemTexts.push(nameText, priceText);
-      rowY += 20;
-    });
-
-    closeBtn.on('pointerdown', () => {
-      [bg, title, closeBtn, ...itemTexts].forEach(e=>e.destroy());
-      this.storeOpen = false;
-    });
+    closeBtn.on('pointerdown', () => { [bg,title,closeBtn].forEach(e=>e.destroy()); this.storeOpen=false; });
   }
 
-  openStorageMenu() {
+  openStorageMenu(){
     if(this.storageOpen) return;
     this.storageOpen = true;
 
@@ -145,26 +203,18 @@ export class FarmScene extends Phaser.Scene {
     const title = this.add.text(width/2, height - bgHeight + 20, 'STORAGE', { fontSize:'20px', fontFamily:'Arial', color:'#fff'}).setOrigin(0.5,0);
     const closeBtn = this.add.text(width/2 + bgWidth/2 - 20, height - bgHeight + 20, 'X', { fontSize:'18px', color:'#fff', backgroundColor:'#8B0000', padding:{x:5,y:2} }).setOrigin(0.5,0).setInteractive();
 
-    this.playerStorage = this.playerStorage || {
-      'Carrot':2, 'Corn':3, 'Chili':1, 'Cabbage':4,
-      'Strawberry':2, 'Pineapple':1, 'Watermelon':1, 'Orange':3
-    };
-
-    const itemTexts = [];
     let rowY = height - bgHeight + 60;
     const colX1 = width/2 - 50;
     const colX2 = width/2 + 50;
+    const itemTexts = [];
 
     Object.keys(this.playerStorage).forEach(item=>{
       const nameText = this.add.text(colX1,rowY,item,{fontSize:'14px',color:'#fff'}).setOrigin(0.5,0);
       const qtyText = this.add.text(colX2,rowY,this.playerStorage[item],{fontSize:'14px',color:'#fff'}).setOrigin(0.5,0);
-      itemTexts.push(nameText, qtyText);
+      itemTexts.push(nameText,qtyText);
       rowY += 20;
     });
 
-    closeBtn.on('pointerdown', () => {
-      [bg, title, closeBtn, ...itemTexts].forEach(e=>e.destroy());
-      this.storageOpen = false;
-    });
+    closeBtn.on('pointerdown', () => { [bg,title,closeBtn,...itemTexts].forEach(e=>e.destroy()); this.storageOpen = false; });
   }
 }
