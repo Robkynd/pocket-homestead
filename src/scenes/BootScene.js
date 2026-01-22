@@ -5,7 +5,7 @@ export class BootScene extends Phaser.Scene {
 
   preload() {
     // Load assets
-    this.load.image('logo', 'assets/ui/logo.png');
+    this.load.image('logo', 'assets/ui/title.png');
     // Load musik boot
     this.load.audio('bootMusic', 'assets/sound/boot.mp3');
   }
