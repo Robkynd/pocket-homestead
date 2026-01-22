@@ -1,130 +1,200 @@
 export class FarmScene extends Phaser.Scene {
   constructor() {
     super('FarmScene');
+    this.tileSprites = [];
+    this.playerStorage = {};
+    this.storeOpen = false;
+    this.storageOpen = false;
+    this.wellOpen = false;
+    this.waterAmount = 0;
+    this.waterMax = 100;
+    this.seasons = ['Spring','Summer','Autumn','Winter'];
   }
 
   preload() {
-    // Tile & UI
+    // Tiles & UI
     this.load.image('grass', 'assets/ui/grass.png');
     this.load.image('dirt', 'assets/ui/dirt.png');
-    this.load.image('weatsoil', 'assets/ui/weatsoil.png');
+    this.load.image('storeBtn', 'assets/ui/store.png');
+    this.load.image('storageBtn', 'assets/ui/storage.png');
     this.load.image('well', 'assets/ui/well.png');
-    this.load.image('store', 'assets/ui/store.png');
-    this.load.image('storage', 'assets/ui/storage.png');
+
+    // Season images
+    this.load.image('Spring', 'assets/ui/spring.png');
+    this.load.image('Summer', 'assets/ui/summer.png');
+    this.load.image('Autumn', 'assets/ui/autum.png');
+    this.load.image('Winter', 'assets/ui/winter.png');
   }
 
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
-    const tileSize = 64;
-    const sideThickness = 8;
-    const frameColor = 0x8B4513;
 
     // --- Frame ---
-    // Kiri & kanan tipis
-    this.add.rectangle(0, 0, sideThickness, height, frameColor).setOrigin(0);
-    this.add.rectangle(width - sideThickness, 0, sideThickness, height, frameColor).setOrigin(0);
-    // Atas & bawah tebal 1 tile
-    this.add.rectangle(sideThickness, 0, width - sideThickness*2, tileSize, frameColor).setOrigin(0);
-    this.add.rectangle(sideThickness, height - tileSize, width - sideThickness*2, tileSize, frameColor).setOrigin(0);
+    const frameThicknessSide = 8;
+    const frameHeightTop = 35;
+    const frameHeightBottom = 120;
+    const frameColor = 0x8B4513;
 
-    // --- Jam kiri atas ---
-    const timeText = this.add.text(sideThickness + 5, 5, '', {
-      fontFamily: 'Arial',
-      fontSize: '16px',
-      color: '#fff',
-      stroke: '#6b4f2c',
-      strokeThickness: 2
-    });
+    this.add.rectangle(0, 0, frameThicknessSide, height, frameColor).setOrigin(0); // kiri
+    this.add.rectangle(width - frameThicknessSide, 0, frameThicknessSide, height, frameColor).setOrigin(0); // kanan
+    this.add.rectangle(frameThicknessSide, 0, width - frameThicknessSide*2, frameHeightTop, frameColor).setOrigin(0); // atas
+    this.add.rectangle(frameThicknessSide, height - frameHeightBottom, width - frameThicknessSide*2, frameHeightBottom, frameColor).setOrigin(0); // bawah
 
-    this.time.addEvent({
-      delay: 1000,
-      loop: true,
-      callback: () => {
-        const now = new Date();
-        const hours = now.getHours().toString().padStart(2,'0');
-        const minutes = now.getMinutes().toString().padStart(2,'0');
-        const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-        const dayName = days[now.getDay()];
-        timeText.setText(`${dayName} ${hours}:${minutes}`);
-      }
-    });
+    // --- Grid grass ---
+    const areaWidth = width - frameThicknessSide*2;
+    const areaHeight = height - frameHeightTop - frameHeightBottom;
+    const tileSize = 64;
+    const tileCols = Math.floor(areaWidth / tileSize);
+    const tileRows = Math.floor(areaHeight / tileSize);
+    const offsetX = frameThicknessSide + (areaWidth - tileCols*tileSize)/2;
+    const offsetY = frameHeightTop + (areaHeight - tileRows*tileSize)/2;
 
-    // --- Grass grid ---
-    const availableWidth = width - sideThickness*2;
-    const availableHeight = height - tileSize*2 - tileSize; // sisain frame bawah untuk UI
-    const mapCols = Math.floor(availableWidth / tileSize);
-    const mapRows = Math.floor(availableHeight / tileSize);
-    const offsetX = sideThickness + (availableWidth - mapCols*tileSize)/2;
-    const offsetY = tileSize + (availableHeight - mapRows*tileSize)/2;
+    const graphics = this.add.graphics();
+    graphics.lineStyle(1, 0x000000, 0.3);
 
-    this.tiles = [];
-    for (let y = 0; y < mapRows; y++) {
-      this.tiles[y] = [];
-      for (let x = 0; x < mapCols; x++) {
+    for(let y=0;y<tileRows;y++){
+      this.tileSprites[y] = [];
+      for(let x=0;x<tileCols;x++){
         const posX = offsetX + x*tileSize;
         const posY = offsetY + y*tileSize;
 
-        const tileImage = this.add.image(posX, posY, 'grass').setOrigin(0).setInteractive();
-        this.tiles[y][x] = { image: tileImage, state: 'grass', x, y };
+        const tile = this.add.image(posX,posY,'grass')
+          .setOrigin(0)
+          .setDisplaySize(tileSize,tileSize)
+          .setInteractive({useHandCursor:true});
 
-        tileImage.on('pointerdown', () => {
-          const tile = this.tiles[y][x];
-          if (tile.state === 'grass') {
-            tile.state = 'dirt';
-            tile.image.setTexture('dirt');
-          } else if (tile.state === 'dirt') {
-            if (this.wellWater > 0) {
-              tile.state = 'weatsoil';
-              tile.image.setTexture('weatsoil');
-              this.wellWater = Math.max(this.wellWater - 1, 0);
-              this.updateWellUI();
-            }
-          }
-        });
+        tile.on('pointerdown',()=>this.plantSoil(tile,tileSize));
+        this.tileSprites[y][x] = tile;
+
+        graphics.strokeRect(posX,posY,tileSize,tileSize);
       }
     }
 
-    // --- UI: Bottom menu frame positions ---
-    const uiY = height - tileSize + 8; // posisi UI di atas frame bawah
-    const uiPadding = 10;
+    // --- Jam realtime kiri atas ---
+    const timeText = this.add.text(frameThicknessSide + 5, frameHeightTop/2, '', {
+      fontFamily:'Arial', fontSize:'14px', color:'#fff', stroke:'#6b4f2c', strokeThickness:2
+    }).setOrigin(0,0.5);
 
-    // --- Store button ---
-    const storeX = width/2 - 32;
-    this.storeBtn = this.add.image(storeX, uiY, 'store').setOrigin(0).setInteractive().setDisplaySize(64, 64);
-    this.storeBtn.on('pointerdown', () => {
-      console.log('Store clicked');
-      // nanti bisa muncul menu store
+    // --- Season kanan atas ---
+    const rightPadding = 5;
+    const seasonSize = 30;
+    const textGap = 6;
+
+    this.seasonImage = this.add.image(0,0,'Spring').setOrigin(0.5,0.5).setDisplaySize(seasonSize,seasonSize);
+    this.seasonText = this.add.text(0,0,'Spring',{fontFamily:'Arial',fontSize:'14px',color:'#fff',stroke:'#6b4f2c',strokeThickness:2}).setOrigin(1,0.5);
+    this.positionSeason(width, frameThicknessSide, frameHeightTop, rightPadding, seasonSize, textGap);
+    this.updateSeason();
+
+    this.time.addEvent({
+      delay:1000,
+      loop:true,
+      callback:()=>{
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2,'0');
+        const minutes = now.getMinutes().toString().padStart(2,'0');
+        const seconds = now.getSeconds().toString().padStart(2,'0');
+        const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        timeText.setText(`${days[now.getDay()]} - ${hours}:${minutes}:${seconds}`);
+        this.updateSeason();
+      }
     });
 
-    // --- Storage button ---
-    const storageX = storeX - 80;
-    this.storageBtn = this.add.image(storageX, uiY, 'storage').setOrigin(0).setInteractive().setDisplaySize(64, 64);
-    this.storageBtn.on('pointerdown', () => {
-      console.log('Storage clicked');
-      // nanti bisa muncul menu storage
-    });
+    // --- Buttons store, storage, well ---
+    const storeBtn = this.add.image(width/2 + 40, height - frameHeightBottom/2,'storeBtn').setDisplaySize(50,50).setOrigin(0.5).setInteractive({useHandCursor:true});
+    const storageBtn = this.add.image(width/2 - 40, height - frameHeightBottom/2,'storageBtn').setDisplaySize(50,50).setOrigin(0.5).setInteractive({useHandCursor:true});
+    const wellBtn = this.add.image(width/2 + 120, height - frameHeightBottom/2,'well').setDisplaySize(50,50).setOrigin(0.5).setInteractive({useHandCursor:true});
 
-    // --- Well button ---
-    const wellX = storeX + 80;
-    this.wellImage = this.add.image(wellX, uiY, 'well').setOrigin(0).setInteractive().setDisplaySize(64, 64);
-    this.wellWater = 30;
-    this.wellText = this.add.text(wellX, uiY + 65, `Water: ${this.wellWater}/100`, {
-      fontFamily: 'Arial',
-      fontSize: '14px',
-      color: '#00f',
-      stroke: '#000',
-      strokeThickness: 1
-    });
+    storeBtn.on('pointerdown',()=>{if(!this.storeOpen)this.openStoreMenu();});
+    storageBtn.on('pointerdown',()=>{if(!this.storageOpen)this.openStorageMenu();});
+    wellBtn.on('pointerdown',()=>{if(!this.wellOpen)this.openWellMenu();});
 
-    this.wellImage.on('pointerdown', () => {
-      console.log('Well clicked, future upgrade logic');
-    });
-
-    this.updateWellUI();
+    // --- Setup player storage baru ---
+    if(Object.keys(this.playerStorage).length===0){
+      const seeds=['Carrot','Corn','Chili','Cabbage','Strawberry','Pineapple','Watermelon','Orange'];
+      seeds.forEach(seed=>this.playerStorage[seed]=Phaser.Math.Between(1,3));
+    }
   }
 
-  updateWellUI() {
-    this.wellText.setText(`Water: ${this.wellWater}/100`);
+  positionSeason(width, frameThicknessSide, frameHeightTop, rightPadding, seasonSize, textGap){
+    this.seasonImage.x = width - frameThicknessSide - seasonSize/2 - rightPadding;
+    this.seasonImage.y = frameHeightTop/2;
+    this.seasonText.x = this.seasonImage.x - seasonSize/2 - textGap;
+    this.seasonText.y = this.seasonImage.y;
+  }
+
+  updateSeason(){
+    const now = new Date();
+    const startYear = 2026;
+    const startDate = new Date(startYear,0,1);
+    const dayOfYear = Math.floor((now-startDate)/(1000*60*60*24))+1;
+    const seasonIndex = Math.floor((dayOfYear-1)/5)%4;
+    const seasonName = this.seasons[seasonIndex];
+    this.seasonImage.setTexture(seasonName);
+    this.seasonText.setText(seasonName);
+  }
+
+  plantSoil(tile,tileSize){
+    if(tile.texture.key==='dirt') return;
+    tile.setTexture('dirt');
+    tile.setDisplaySize(tileSize,tileSize);
+  }
+
+  openStoreMenu(){
+    if(this.storeOpen) return;
+    this.storeOpen = true;
+
+    const {width,height}=this.scale;
+    const bgWidth = width*0.85;
+    const bgHeight = height*0.5;
+
+    const bg = this.add.rectangle(width/2, height - bgHeight/2 - 10, bgWidth, bgHeight, 0x654321, 0.95).setOrigin(0.5);
+    const title = this.add.text(width/2, height - bgHeight + 20, 'STORE', { fontSize:'20px', fontFamily:'Arial', color:'#fff'}).setOrigin(0.5,0);
+    const closeBtn = this.add.text(width/2 + bgWidth/2 - 20, height - bgHeight + 20, 'X', { fontSize:'18px', color:'#fff', backgroundColor:'#8B0000', padding:{x:5,y:2} }).setOrigin(0.5,0).setInteractive();
+
+    closeBtn.on('pointerdown',()=>{[bg,title,closeBtn].forEach(e=>e.destroy());this.storeOpen=false;});
+  }
+
+  openStorageMenu(){
+    if(this.storageOpen) return;
+    this.storageOpen = true;
+
+    const {width,height}=this.scale;
+    const bgWidth = width*0.85;
+    const bgHeight = height*0.5;
+
+    const bg = this.add.rectangle(width/2, height - bgHeight/2 - 10, bgWidth, bgHeight, 0x444444, 0.95).setOrigin(0.5);
+    const title = this.add.text(width/2, height - bgHeight + 20, 'STORAGE', { fontSize:'20px', fontFamily:'Arial', color:'#fff'}).setOrigin(0.5,0);
+    const closeBtn = this.add.text(width/2 + bgWidth/2 - 20, height - bgHeight + 20, 'X', { fontSize:'18px', color:'#fff', backgroundColor:'#8B0000', padding:{x:5,y:2} }).setOrigin(0.5,0).setInteractive();
+
+    let rowY = height - bgHeight + 60;
+    const colX1 = width/2 - 50;
+    const colX2 = width/2 + 50;
+    const itemTexts = [];
+
+    Object.keys(this.playerStorage).forEach(item=>{
+      const nameText = this.add.text(colX1,rowY,item,{fontSize:'14px',color:'#fff'}).setOrigin(0.5,0);
+      const qtyText = this.add.text(colX2,rowY,this.playerStorage[item],{fontSize:'14px',color:'#fff'}).setOrigin(0.5,0);
+      itemTexts.push(nameText,qtyText);
+      rowY += 20;
+    });
+
+    closeBtn.on('pointerdown',()=>{[bg,title,closeBtn,...itemTexts].forEach(e=>e.destroy());this.storageOpen=false;});
+  }
+
+  openWellMenu(){
+    if(this.wellOpen) return;
+    this.wellOpen = true;
+
+    const {width,height}=this.scale;
+    const bgWidth = width*0.5;
+    const bgHeight = height*0.3;
+
+    const bg = this.add.rectangle(width/2, height - bgHeight/2 - 10, bgWidth, bgHeight, 0x1E90FF, 0.95).setOrigin(0.5);
+    const title = this.add.text(width/2, height - bgHeight + 10, 'WELL', { fontSize:'20px', fontFamily:'Arial', color:'#fff'}).setOrigin(0.5,0);
+    const waterText = this.add.text(width/2, height - bgHeight + 50, `Water: ${this.waterAmount}/${this.waterMax}`, { fontSize:'16px', color:'#fff'}).setOrigin(0.5);
+
+    const closeBtn = this.add.text(width/2 + bgWidth/2 - 20, height - bgHeight + 10, 'X', { fontSize:'18px', color:'#fff', backgroundColor:'#8B0000', padding:{x:5,y:2} }).setOrigin(0.5,0).setInteractive();
+    closeBtn.on('pointerdown',()=>{[bg,title,waterText,closeBtn].forEach(e=>e.destroy());this.wellOpen=false;});
   }
 }
