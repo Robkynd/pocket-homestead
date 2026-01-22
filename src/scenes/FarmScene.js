@@ -55,7 +55,7 @@ export class FarmScene extends Phaser.Scene {
 
     // --- Full Grass Grid ---
     const graphics = this.add.graphics();
-    graphics.lineStyle(1, 0x000000, 0.4);
+    graphics.lineStyle(1, 0x000000, 0.3);
 
     for (let y = 0; y < tileRows; y++) {
       this.tileSprites[y] = [];
@@ -70,6 +70,8 @@ export class FarmScene extends Phaser.Scene {
 
         tile.on('pointerdown', () => this.plantSeed(tile, tileSize));
         this.tileSprites[y][x] = tile;
+
+        // Garis grid per tile
         graphics.strokeRect(posX, posY, tileSize, tileSize);
       }
     }
@@ -89,12 +91,13 @@ export class FarmScene extends Phaser.Scene {
       strokeThickness: 2
     }).setOrigin(0,0.5);
 
-    // --- Season kanan atas ---
-    this.seasonImage = this.add.image(width - frameThicknessSide - 40, frameHeightTop/2, 'Spring')
+    // --- Season kanan atas (fit di frame) ---
+    const seasonPaddingRight = 10;
+    this.seasonImage = this.add.image(width - frameThicknessSide - 40 - seasonPaddingRight, frameHeightTop/2, 'Spring')
       .setOrigin(0.5,0.5)
       .setDisplaySize(30,30);
 
-    this.seasonText = this.add.text(width - frameThicknessSide - 10, frameHeightTop/2, 'Spring', {
+    this.seasonText = this.add.text(width - frameThicknessSide - 5 - seasonPaddingRight, frameHeightTop/2, 'Spring', {
       fontFamily: 'Arial',
       fontSize: '14px',
       color:'#fff',
@@ -102,7 +105,7 @@ export class FarmScene extends Phaser.Scene {
       strokeThickness: 2
     }).setOrigin(0,0.5);
 
-    this.updateSeason(); // set season pertama
+    this.updateSeason();
 
     // --- Update clock & season setiap detik ---
     this.time.addEvent({
@@ -133,7 +136,7 @@ export class FarmScene extends Phaser.Scene {
     if(Object.keys(this.playerStorage).length===0){
       const seeds = ['Carrot','Corn','Chili','Cabbage','Strawberry','Pineapple','Watermelon','Orange'];
       seeds.forEach(seed=>{
-        this.playerStorage[seed] = Phaser.Math.Between(1,3); // random 1-3 bibit
+        this.playerStorage[seed] = Phaser.Math.Between(1,3);
       });
     }
   }
@@ -141,7 +144,7 @@ export class FarmScene extends Phaser.Scene {
   updateSeason(){
     const now = new Date();
     const startYear = 2026;
-    const startDate = new Date(startYear,0,1); // 1 Jan 2026
+    const startDate = new Date(startYear,0,1);
     const dayOfYear = Math.floor((now - startDate)/(1000*60*60*24)) + 1;
 
     const seasonIndex = Math.floor((dayOfYear-1)/5) % 4;
@@ -152,28 +155,10 @@ export class FarmScene extends Phaser.Scene {
   }
 
   plantSeed(tile, tileSize){
-    if(tile.texture.key === 'dirt') return; // udah ditanami
-
-    const availableSeeds = Object.keys(this.playerStorage).filter(s => this.playerStorage[s] > 0);
-    if(availableSeeds.length === 0) return;
-
-    const seed = availableSeeds[Phaser.Math.Between(0, availableSeeds.length-1)];
-    this.playerStorage[seed]--;
+    if(tile.texture.key === 'dirt') return;
 
     tile.setTexture('dirt');
     tile.setDisplaySize(tileSize, tileSize);
-
-    let baseTime = this.seedGrowTime[seed] || 60;
-    switch(this.seasonText.text){
-      case 'Summer': baseTime *= 0.8; break;
-      case 'Autumn': baseTime *= 1.0; break;
-      case 'Winter': baseTime *= 1.5; break;
-      case 'Spring': baseTime *= 1.0; break;
-    }
-
-    this.time.delayedCall(baseTime*1000, () => {
-      console.log(`Tile grown: ${seed} after ${Math.round(baseTime)}s`);
-    });
   }
 
   openStoreMenu(){
