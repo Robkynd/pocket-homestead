@@ -3,7 +3,7 @@ export class FarmScene extends Phaser.Scene {
     super('FarmScene');
     this.storeOpen = false;
     this.storageOpen = false;
-    this.tileSprites = []; // simpan semua tile sprite untuk interaksi
+    this.tileSprites = [];
   }
 
   preload() {
@@ -19,7 +19,7 @@ export class FarmScene extends Phaser.Scene {
 
     // --- Frame settings ---
     const frameThicknessSide = 8;
-    const frameHeightTop = 40;
+    const frameHeightTop = 35;
     const frameHeightBottom = 120;
     const frameColor = 0x8B4513;
 
@@ -43,14 +43,15 @@ export class FarmScene extends Phaser.Scene {
       for (let x = 0; x < tileCols; x++) {
         const posX = offsetX + x*tileSize;
         const posY = offsetY + y*tileSize;
+
         const tile = this.add.image(posX, posY, 'grass')
           .setOrigin(0)
           .setDisplaySize(tileSize, tileSize)
           .setInteractive({useHandCursor:true});
 
-        // tiap tile bisa di tap → ganti jadi dirt
         tile.on('pointerdown', () => {
           tile.setTexture('dirt');
+          tile.setDisplaySize(tileSize, tileSize); // pastikan nge-fit
         });
 
         this.tileSprites[y][x] = tile;
@@ -59,10 +60,10 @@ export class FarmScene extends Phaser.Scene {
     }
 
     // --- Frame ---
-    this.add.rectangle(0, 0, frameThicknessSide, height, frameColor).setOrigin(0);
-    this.add.rectangle(width - frameThicknessSide, 0, frameThicknessSide, height, frameColor).setOrigin(0);
-    this.add.rectangle(frameThicknessSide, 0, width - frameThicknessSide*2, frameHeightTop, frameColor).setOrigin(0);
-    this.add.rectangle(frameThicknessSide, height - frameHeightBottom, width - frameThicknessSide*2, frameHeightBottom, frameColor).setOrigin(0);
+    this.add.rectangle(0, 0, frameThicknessSide, height, frameColor).setOrigin(0); // kiri
+    this.add.rectangle(width - frameThicknessSide, 0, frameThicknessSide, height, frameColor).setOrigin(0); // kanan
+    this.add.rectangle(frameThicknessSide, 0, width - frameThicknessSide*2, frameHeightTop, frameColor).setOrigin(0); // atas
+    this.add.rectangle(frameThicknessSide, height - frameHeightBottom, width - frameThicknessSide*2, frameHeightBottom, frameColor).setOrigin(0); // bawah
 
     // --- Jam realtime kiri atas ---
     const timeText = this.add.text(frameThicknessSide + 5, frameHeightTop/2, '', {
@@ -93,12 +94,8 @@ export class FarmScene extends Phaser.Scene {
     const storageBtn = this.add.image(width/2 - 40, height - frameHeightBottom/2, 'storageBtn')
       .setDisplaySize(50,50).setOrigin(0.5).setInteractive({useHandCursor:true});
 
-    storeBtn.on('pointerdown', () => {
-      if(!this.storeOpen) this.openStoreMenu();
-    });
-    storageBtn.on('pointerdown', () => {
-      if(!this.storageOpen) this.openStorageMenu();
-    });
+    storeBtn.on('pointerdown', () => { if(!this.storeOpen) this.openStoreMenu(); });
+    storageBtn.on('pointerdown', () => { if(!this.storageOpen) this.openStorageMenu(); });
   }
 
   openStoreMenu() {
@@ -110,13 +107,8 @@ export class FarmScene extends Phaser.Scene {
     const bgHeight = height*0.5;
 
     const bg = this.add.rectangle(width/2, height - bgHeight/2 - 10, bgWidth, bgHeight, 0x654321, 0.95).setOrigin(0.5);
-    const title = this.add.text(width/2, height - bgHeight + 20, 'STORE', {
-      fontSize: '20px', fontFamily:'Arial', color:'#fff'
-    }).setOrigin(0.5,0);
-
-    const closeBtn = this.add.text(width/2 + bgWidth/2 - 20, height - bgHeight + 20, 'X', {
-      fontSize:'18px', color:'#fff', backgroundColor:'#8B0000', padding:{x:5,y:2}
-    }).setOrigin(0.5,0).setInteractive();
+    const title = this.add.text(width/2, height - bgHeight + 20, 'STORE', { fontSize:'20px', fontFamily:'Arial', color:'#fff'}).setOrigin(0.5,0);
+    const closeBtn = this.add.text(width/2 + bgWidth/2 - 20, height - bgHeight + 20, 'X', { fontSize:'18px', color:'#fff', backgroundColor:'#8B0000', padding:{x:5,y:2} }).setOrigin(0.5,0).setInteractive();
 
     const storeItems = [
       {name:'Carrot', price:2}, {name:'Corn', price:3}, {name:'Chili', price:1}, {name:'Cabbage', price:4},
@@ -125,8 +117,8 @@ export class FarmScene extends Phaser.Scene {
 
     const itemTexts = [];
     let rowY = height - bgHeight + 60;
-    const colX1 = width/2 - 50; // name
-    const colX2 = width/2 + 50; // price
+    const colX1 = width/2 - 50;
+    const colX2 = width/2 + 50;
 
     storeItems.forEach(item=>{
       const nameText = this.add.text(colX1,rowY,item.name,{fontSize:'14px',color:'#fff'}).setOrigin(0.5,0);
@@ -150,13 +142,8 @@ export class FarmScene extends Phaser.Scene {
     const bgHeight = height*0.5;
 
     const bg = this.add.rectangle(width/2, height - bgHeight/2 - 10, bgWidth, bgHeight, 0x444444, 0.95).setOrigin(0.5);
-    const title = this.add.text(width/2, height - bgHeight + 20, 'STORAGE', {
-      fontSize: '20px', fontFamily:'Arial', color:'#fff'
-    }).setOrigin(0.5,0);
-
-    const closeBtn = this.add.text(width/2 + bgWidth/2 - 20, height - bgHeight + 20, 'X', {
-      fontSize:'18px', color:'#fff', backgroundColor:'#8B0000', padding:{x:5,y:2}
-    }).setOrigin(0.5,0).setInteractive();
+    const title = this.add.text(width/2, height - bgHeight + 20, 'STORAGE', { fontSize:'20px', fontFamily:'Arial', color:'#fff'}).setOrigin(0.5,0);
+    const closeBtn = this.add.text(width/2 + bgWidth/2 - 20, height - bgHeight + 20, 'X', { fontSize:'18px', color:'#fff', backgroundColor:'#8B0000', padding:{x:5,y:2} }).setOrigin(0.5,0).setInteractive();
 
     this.playerStorage = this.playerStorage || {
       'Carrot':2, 'Corn':3, 'Chili':1, 'Cabbage':4,
