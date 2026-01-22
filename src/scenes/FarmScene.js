@@ -17,24 +17,21 @@ export class FarmScene extends Phaser.Scene {
 
     // --- Frame settings ---
     const frameThicknessSide = 8;
-    const frameHeightTop = 40;
-    const frameHeightBottom = 120;
+    const frameHeightTop = 40;      // Tipis
+    const frameHeightBottom = 120;  // Lebih lebar untuk menu
     const frameColor = 0x8B4513;
 
-    // --- Hitung area grass ---
+    // --- Hitung area grass (zona tengah) ---
     const areaWidth = width - frameThicknessSide*2;
     const areaHeight = height - frameHeightTop - frameHeightBottom;
 
-    // --- Bagi tile 4 horizontal & vertikal ---
-    const tileCols = 4;
-    const tileRows = 4;
-    const tileWidth = areaWidth / tileCols;
-    const tileHeight = areaHeight / tileRows;
-    const tileSize = Math.min(tileWidth, tileHeight);
+    // --- Tile default ---
+    const tileSize = 64;
+    const tileCols = Math.floor(areaWidth / tileSize);
+    const tileRows = Math.floor(areaHeight / tileSize);
 
-    // --- Hitung offset untuk posisikan grass ditengah ---
-    const offsetX = frameThicknessSide + (areaWidth - tileSize*tileCols)/2;
-    const offsetY = frameHeightTop + (areaHeight - tileSize*tileRows)/2;
+    const offsetX = frameThicknessSide + (areaWidth - tileCols*tileSize)/2;
+    const offsetY = frameHeightTop + (areaHeight - tileRows*tileSize)/2;
 
     // --- Full Grass Grid & Grid lines ---
     const graphics = this.add.graphics();
@@ -77,7 +74,7 @@ export class FarmScene extends Phaser.Scene {
       }
     });
 
-    // --- Tombol Store bawah kanan ---
+    // --- Tombol Store di frame bawah kanan ---
     const storeBtn = this.add.image(width/2 + 40, height - frameHeightBottom/2, 'storeBtn')
       .setDisplaySize(50, 50)
       .setOrigin(0.5)
@@ -87,7 +84,7 @@ export class FarmScene extends Phaser.Scene {
       if (!this.storeOpen) this.openStoreMenu();
     });
 
-    // --- Tombol Storage bawah kiri ---
+    // --- Tombol Storage di frame bawah kiri ---
     const storageBtn = this.add.image(width/2 - 40, height - frameHeightBottom/2, 'storageBtn')
       .setDisplaySize(50, 50)
       .setOrigin(0.5)
@@ -104,16 +101,16 @@ export class FarmScene extends Phaser.Scene {
 
     const { width, height } = this.scale;
     const bgWidth = width * 0.85;
-    const bgHeight = height * 0.6;
+    const bgHeight = height * 0.5;
 
-    const bg = this.add.rectangle(width/2, height/2, bgWidth, bgHeight, 0x654321, 0.95).setOrigin(0.5);
-    const title = this.add.text(width/2, height/2 - bgHeight/2 + 20, 'STORE', {
+    const bg = this.add.rectangle(width/2, height - bgHeight/2 - 10, bgWidth, bgHeight, 0x654321, 0.95).setOrigin(0.5); // muncul di frame bawah
+    const title = this.add.text(width/2, height - bgHeight + 20, 'STORE', {
       fontSize: '20px',
       fontFamily: 'Arial',
       color: '#fff'
     }).setOrigin(0.5, 0);
 
-    const closeBtn = this.add.text(width/2 + bgWidth/2 - 20, height/2 - bgHeight/2 + 20, 'X', {
+    const closeBtn = this.add.text(width/2 + bgWidth/2 - 20, height - bgHeight + 20, 'X', {
       fontSize: '18px',
       color: '#fff',
       backgroundColor: '#8B0000',
@@ -132,16 +129,16 @@ export class FarmScene extends Phaser.Scene {
 
     const { width, height } = this.scale;
     const bgWidth = width * 0.85;
-    const bgHeight = height * 0.6;
-    const bg = this.add.rectangle(width/2, height/2, bgWidth, bgHeight, 0x444444, 0.95).setOrigin(0.5);
+    const bgHeight = height * 0.5;
+    const bg = this.add.rectangle(width/2, height - bgHeight/2 - 10, bgWidth, bgHeight, 0x444444, 0.95).setOrigin(0.5);
 
-    const title = this.add.text(width/2, height/2 - bgHeight/2 + 20, 'STORAGE', {
+    const title = this.add.text(width/2, height - bgHeight + 20, 'STORAGE', {
       fontSize: '20px',
       fontFamily: 'Arial',
       color: '#fff'
     }).setOrigin(0.5, 0);
 
-    const closeBtn = this.add.text(width/2 + bgWidth/2 - 20, height/2 - bgHeight/2 + 20, 'X', {
+    const closeBtn = this.add.text(width/2 + bgWidth/2 - 20, height - bgHeight + 20, 'X', {
       fontSize: '18px',
       color: '#fff',
       backgroundColor: '#8B0000',
@@ -160,7 +157,7 @@ export class FarmScene extends Phaser.Scene {
       'Orange': 3
     };
 
-    const startY = height/2 - bgHeight/2 + 60;
+    const startY = height - bgHeight + 60;
     const colX1 = width/2 - 50; // Name
     const colX2 = width/2 + 50; // Quantity
     const itemTexts = [];
