@@ -21,12 +21,14 @@ export class FarmScene extends Phaser.Scene {
     const frameColor = 0x8B4513;
 
     // --- Frame ---
-    this.add.rectangle(0, 0, sideThickness, height, frameColor).setOrigin(0); // kiri
-    this.add.rectangle(width - sideThickness, 0, sideThickness, height, frameColor).setOrigin(0); // kanan
-    this.add.rectangle(sideThickness, 0, width - sideThickness*2, tileSize, frameColor).setOrigin(0); // atas
-    this.add.rectangle(sideThickness, height - tileSize, width - sideThickness*2, tileSize, frameColor).setOrigin(0); // bawah
+    // Kiri & kanan tipis
+    this.add.rectangle(0, 0, sideThickness, height, frameColor).setOrigin(0);
+    this.add.rectangle(width - sideThickness, 0, sideThickness, height, frameColor).setOrigin(0);
+    // Atas & bawah tebal 1 tile
+    this.add.rectangle(sideThickness, 0, width - sideThickness*2, tileSize, frameColor).setOrigin(0);
+    this.add.rectangle(sideThickness, height - tileSize, width - sideThickness*2, tileSize, frameColor).setOrigin(0);
 
-    // --- UI: Jam kiri atas ---
+    // --- Jam kiri atas ---
     const timeText = this.add.text(sideThickness + 5, 5, '', {
       fontFamily: 'Arial',
       fontSize: '16px',
@@ -49,21 +51,23 @@ export class FarmScene extends Phaser.Scene {
     });
 
     // --- Grass grid ---
-    const mapWidth = Math.floor((width - sideThickness*2) / tileSize);
-    const mapHeight = Math.floor((height - tileSize*2) / tileSize);
+    const availableWidth = width - sideThickness*2;
+    const availableHeight = height - tileSize*2 - tileSize; // sisain frame bawah untuk UI
+    const mapCols = Math.floor(availableWidth / tileSize);
+    const mapRows = Math.floor(availableHeight / tileSize);
+    const offsetX = sideThickness + (availableWidth - mapCols*tileSize)/2;
+    const offsetY = tileSize + (availableHeight - mapRows*tileSize)/2;
 
-    this.tiles = []; // 2D array tiles
-    for (let y = 0; y < mapHeight; y++) {
+    this.tiles = [];
+    for (let y = 0; y < mapRows; y++) {
       this.tiles[y] = [];
-      for (let x = 0; x < mapWidth; x++) {
-        const posX = sideThickness + x*tileSize;
-        const posY = tileSize + y*tileSize;
+      for (let x = 0; x < mapCols; x++) {
+        const posX = offsetX + x*tileSize;
+        const posY = offsetY + y*tileSize;
 
         const tileImage = this.add.image(posX, posY, 'grass').setOrigin(0).setInteractive();
-        // Simpan tile state
         this.tiles[y][x] = { image: tileImage, state: 'grass', x, y };
 
-        // Touch interaction
         tileImage.on('pointerdown', () => {
           const tile = this.tiles[y][x];
           if (tile.state === 'grass') {
@@ -81,13 +85,31 @@ export class FarmScene extends Phaser.Scene {
       }
     }
 
-    // --- Well setup ---
-    this.wellWater = 30; // max 100
-    const wellX = width - sideThickness - 64 - 10; // pojok kanan bawah area frame
-    const wellY = height - tileSize - 64 - 10;
-    this.wellImage = this.add.image(wellX, wellY, 'well').setOrigin(0).setInteractive();
+    // --- UI: Bottom menu frame positions ---
+    const uiY = height - tileSize + 8; // posisi UI di atas frame bawah
+    const uiPadding = 10;
 
-    this.wellText = this.add.text(wellX, wellY + 65, `Water: ${this.wellWater}/100`, {
+    // --- Store button ---
+    const storeX = width/2 - 32;
+    this.storeBtn = this.add.image(storeX, uiY, 'store').setOrigin(0).setInteractive().setDisplaySize(64, 64);
+    this.storeBtn.on('pointerdown', () => {
+      console.log('Store clicked');
+      // nanti bisa muncul menu store
+    });
+
+    // --- Storage button ---
+    const storageX = storeX - 80;
+    this.storageBtn = this.add.image(storageX, uiY, 'storage').setOrigin(0).setInteractive().setDisplaySize(64, 64);
+    this.storageBtn.on('pointerdown', () => {
+      console.log('Storage clicked');
+      // nanti bisa muncul menu storage
+    });
+
+    // --- Well button ---
+    const wellX = storeX + 80;
+    this.wellImage = this.add.image(wellX, uiY, 'well').setOrigin(0).setInteractive().setDisplaySize(64, 64);
+    this.wellWater = 30;
+    this.wellText = this.add.text(wellX, uiY + 65, `Water: ${this.wellWater}/100`, {
       fontFamily: 'Arial',
       fontSize: '14px',
       color: '#00f',
@@ -95,9 +117,8 @@ export class FarmScene extends Phaser.Scene {
       strokeThickness: 1
     });
 
-    // Optional: klik well buat refill (future upgrade)
     this.wellImage.on('pointerdown', () => {
-      console.log('Well clicked, future upgrade logic here');
+      console.log('Well clicked, future upgrade logic');
     });
 
     this.updateWellUI();
