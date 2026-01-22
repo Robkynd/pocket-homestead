@@ -15,7 +15,7 @@ export class FarmScene extends Phaser.Scene {
       Watermelon: 180,
       Orange: 90
     };
-    this.seasons = ['Spring', 'Summer', 'Autumn', 'Winter'];
+    this.seasons = ['Spring','Summer','Autumn','Winter'];
   }
 
   preload() {
@@ -91,20 +91,22 @@ export class FarmScene extends Phaser.Scene {
       strokeThickness: 2
     }).setOrigin(0,0.5);
 
-    // --- Season kanan atas (fit di frame) ---
-    const seasonPaddingRight = 10;
-    this.seasonImage = this.add.image(width - frameThicknessSide - 40 - seasonPaddingRight, frameHeightTop/2, 'Spring')
+    // --- Season kanan atas (masuk frame) ---
+    const rightPadding = 5;
+    const seasonSize = 30;
+    this.seasonImage = this.add.image(0,0,'Spring')
       .setOrigin(0.5,0.5)
-      .setDisplaySize(30,30);
+      .setDisplaySize(seasonSize, seasonSize);
 
-    this.seasonText = this.add.text(width - frameThicknessSide - 5 - seasonPaddingRight, frameHeightTop/2, 'Spring', {
-      fontFamily: 'Arial',
-      fontSize: '14px',
+    this.seasonText = this.add.text(0,0,'Spring',{
+      fontFamily:'Arial',
+      fontSize:'14px',
       color:'#fff',
       stroke:'#6b4f2c',
-      strokeThickness: 2
+      strokeThickness:2
     }).setOrigin(0,0.5);
 
+    this.positionSeason(width, frameThicknessSide, frameHeightTop, rightPadding, seasonSize);
     this.updateSeason();
 
     // --- Update clock & season setiap detik ---
@@ -139,6 +141,16 @@ export class FarmScene extends Phaser.Scene {
         this.playerStorage[seed] = Phaser.Math.Between(1,3);
       });
     }
+  }
+
+  positionSeason(width, frameThicknessSide, frameHeightTop, rightPadding, seasonSize){
+    // Posisi image
+    this.seasonImage.x = width - frameThicknessSide - seasonSize/2 - rightPadding;
+    this.seasonImage.y = frameHeightTop/2;
+
+    // Posisi text di kiri image
+    this.seasonText.x = this.seasonImage.x - seasonSize/2 - 5;
+    this.seasonText.y = frameHeightTop/2;
   }
 
   updateSeason(){
